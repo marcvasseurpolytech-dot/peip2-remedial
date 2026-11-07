@@ -16,17 +16,13 @@ with sync_playwright() as p:
     page.goto(BASE); page.wait_for_selector('form[data-form=signin]')
     assert 'Sign in' in page.inner_text('.tabs') and 'Connexion' not in page.inner_text('body')   # anglais par défaut
     page.fill('input[name=nom]','martin')
-    page.click('[data-act=lang]')                       # passage en français, champ conservé en mémoire
-    page.wait_for_selector('form[data-form=signin]')
-    assert 'Connexion' in page.inner_text('.tabs') and page.input_value('input[name=nom]')=='MARTIN'
-    page.click('[data-act=lang]')                       # retour en anglais
-    page.wait_for_selector('form[data-form=signin]')
+    assert page.locator('[data-act=lang]').count()==0   # no language button for students
     txt=page.inner_text('body'); print('EN LOGIN:', txt.replace('\n',' | ')[:260])
     assert 'Sign in' in txt and 'Create an account' in txt and 'Connexion' not in txt
     assert page.evaluate('document.documentElement.lang')=='en'
-    assert page.input_value('input[name=nom]')=='MARTIN'
+    assert page.input_value('input[name=nom]').upper()=='MARTIN'
     page.click('[data-tab=up]'); page.wait_for_selector('select[name=dept]')
-    page.fill('input[name=prenom]','Bob'); page.select_option('select[name=dept]','PEIP2 G1')
+    page.fill('input[name=nom]','MARTIN'); page.fill('input[name=prenom]','Bob'); page.select_option('select[name=dept]','PEIP2 G1')
     page.fill('input[name=code]','4321'); page.fill('input[name=code2]','4321')
     page.click('form button.btn'); page.wait_for_selector('.msg.info'); print('SIGNUP EN:', page.inner_text('.msg.info'))
     page.fill('input[name=nom]','MARTIN'); page.fill('input[name=code]','4321'); page.click('form button.btn'); page.wait_for_selector('.msg.err')
@@ -56,12 +52,9 @@ with sync_playwright() as p:
     assert 'en français' not in fb.lower() and 'expected answer' in fb.lower() and 'always indicates a habit' in fb
     page.fill('.item:nth-of-type(2) .gap','is cry'); page.click('.item:nth-of-type(2) [data-act=check]')
     fb2=page.inner_text('.item:nth-of-type(2) .fb'); assert 'not quite' in fb2.lower() and 'your answer' in fb2.lower()
-    page.click('[data-act=lang]'); page.wait_for_selector('.item')   # passage en français en plein exercice : l'état est conservé
-    assert 'en français' in page.inner_text('.item:nth-of-type(1) .fb').lower()
     assert page.input_value('.item:nth-of-type(2) .gap')=='is cry'
-    page.click('[data-act=lang]'); page.wait_for_selector('.item')
     # exercice avec annotation anglaise et traduction
-    page.goto(BASE+'#/ex/g01-guidee-b'); page.wait_for_selector('.item')
+    page.goto(BASE+'#/ex/g01-guidee-b'); page.wait_for_selector('.item'); page.wait_for_timeout(500)
     assert '(thinking in progress)' in page.inner_text('.item:nth-of-type(2)') and 'réflexion' not in page.inner_text('main')
     page.goto(BASE+'#/ex/g01-niv-c'); page.wait_for_selector('.item')
     t=page.inner_text('main'); assert 'Correct the sentence. Write the whole sentence' in t and 'Translate into English.' in t
@@ -76,7 +69,7 @@ with sync_playwright() as p:
     page.click('[data-act=tonotes]'); page.wait_for_selector('#nbody'); nb=page.input_value('#nbody'); print('NOTE EN:', nb[:200].replace('\n',' | '))
     assert 'Exercise : Bonus: going further' in nb or 'Exercise' in nb
     page.goto(BASE+'#/history'); page.wait_for_selector('table'); h=page.inner_text('main'); print('HISTORY EN:', h.replace('\n',' | ')[:200]); assert 'My history' in h and 'Review' in h
-    page.reload(); page.wait_for_selector('main'); assert page.evaluate("localStorage.getItem('peip2.lang')")=='en' and 'My history' in page.inner_text('main')
+    page.reload(); page.wait_for_selector('main'); assert 'My history' in page.inner_text('main')
     adm = page.context.new_page(); adm.route('**/fonts.g*', lambda r: r.abort()); adm.on('pageerror', lambda e: errors.append(str(e)))
     adm.goto(BASE+'admin.html'); adm.wait_for_selector('form[data-form=login]')
     assert 'Administrator password' in adm.inner_text('body')
