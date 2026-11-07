@@ -56,6 +56,7 @@ export function createApiStore() {
       emit('SIGNED_IN', toUser(r.student));
     },
     async signOut() { writeSession(null); emit('SIGNED_OUT', null); },
+    async access() { return (await call('/api/access', { auth: false })).open; },
     async listAttempts() { return (await call('/api/attempts')).attempts; },
     async getAttempt(id) { return (await call('/api/attempts?id=' + encodeURIComponent(id))).attempt; },
     async addAttempt(a) { return (await call('/api/attempts', { method: 'POST', body: a })).attempt; },

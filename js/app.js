@@ -10,6 +10,7 @@ let classes = null;
 let attemptsCache = null;
 let run = null; // exercice en cours : { set, given, res, revealed, hints }
 let notesState = null;
+let accessCache = null; // leçons ouvertes par l'enseignant : { G01: true, ... }
 
 /* ---------- utilitaires ---------- */
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -23,6 +24,12 @@ async function getAttempts(force) {
   if (force || !attemptsCache) attemptsCache = await store.listAttempts();
   return attemptsCache;
 }
+
+async function getAccess(force) {
+  if (force || !accessCache) accessCache = await store.access();
+  return accessCache;
+}
+const closedNotice = back => `<h1>${L('Leçon fermée', 'Lesson closed')}</h1><p>${L("Cette leçon n'est pas ouverte pour le moment. Ton enseignant l'ouvrira quand ce sera le moment.", 'This lesson is not open at the moment. Your teacher will open it when the time comes.')}</p><p><a href="#/">${L('Retour au tableau de bord', 'Back to the dashboard')}</a></p>`;
 
 function bestBySet(attempts) {
   const m = new Map();
@@ -114,14 +121,17 @@ async function viewAuth(msg) {
 async function viewHome() {
   setApp(`<p class="muted">${L('Chargement…', 'Loading…')}</p>`, 'home');
   const attempts = await getAttempts();
+  const open = await getAccess(true);
   const best = bestBySet(attempts);
   const totalScore = attempts.reduce((s, a) => s + a.score, 0);
   const totalMax = attempts.reduce((s, a) => s + a.total, 0);
   const avg = totalMax ? Math.round((100 * totalScore) / totalMax) : null;
-  const drafts = listDrafts();
+  const drafts = listDrafts().filter(d => open[d.set.chapter]);
   const chapters = CHAPTERS.map(ch => {
     const done = ch.sets.filter(s => best.has(s.id)).length;
     const p = Math.round((100 * done) / ch.sets.length);
+    if (!open[ch.id]) return `<div class="card" style="opacity:.65"><h3>${esc(ch.id)} · ${esc(lz(ch).title)}</h3>
+      <p class="small muted">${L("Pas encore ouverte. Ton enseignant l'ouvrira bientôt.", 'Not open yet. Your teacher will open it soon.')}</p></div>`;
     return `<div class="card"><h3>${esc(ch.id)} · ${esc(lz(ch).title)}</h3>
       <div class="bar" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div>
       <p class="small muted">${L(`${done} exercice(s) sur ${ch.sets.length} déjà faits`, `${done} of ${ch.sets.length} exercise sets already done`)}</p>
@@ -150,6 +160,8 @@ async function viewHome() {
 async function viewChapter(id) {
   const ch0 = findChapter(id);
   if (!ch0) return viewNotFound();
+  const open = await getAccess(true);
+  if (!open[ch0.id]) { setApp(closedNotice(), 'home'); return; }
   const ch = lz(ch0);
   const attempts = await getAttempts();
   const best = bestBySet(attempts);
@@ -280,7 +292,8 @@ function itemHTML(rawIt, idx, st, review) {
     ${body}
     ${actions ? `<div class="actions">${actions}</div>` : ''}
     ${hintShown && !checked ? `<div class="hintline">${esc(it.hint)}</div>` : ''}
-    ${fb}</article>`;
+    ${fb}
+    <div class="actions"><button class="link small" data-act="tonote" data-item="${esc(it.id)}">${L('Envoyer cette phrase dans mon carnet pour réviser', 'Send this sentence to my notes for revision')}</button></div></article>`;
 }
 
 function liveScore() {
@@ -301,9 +314,11 @@ function updateRunHead() {
   if (fin) fin.textContent = s.done < s.all ? L(`Il reste ${s.all - s.done} question(s) non traitée(s). Elles compteront comme non réussies.`, `${s.all - s.done} question(s) left. They will count as not passed.`) : L('Tout est traité. Tu peux enregistrer.', 'Everything is done. You can save.');
 }
 
-function viewExercise(setId) {
+async function viewExercise(setId) {
   const set = findSet(setId);
   if (!set) return viewNotFound();
+  const open = await getAccess(true);
+  if (!open[set.chapter]) { run = null; setApp(closedNotice(), 'home'); return; }
   if (!run || run.set.id !== setId) {
     const d = loadDraft(setId) || {};
     run = { set, given: d.given || {}, res: d.res || {}, revealed: d.revealed || {}, hints: {}, confirm: false };
@@ -408,6 +423,49 @@ async function viewAttempt(id) {
       </div></div>
     ${set.items.map((it, i) => itemHTML(it, i, st, true)).join('')}`, 'history');
   window.__attempt = a;
+}
+
+// Ajoute une phrase au carnet : une note « Révisions » par série, qui s'allonge au fil des ajouts.
+async function sentenceToNotes(itemId, btn) {
+  const setId = itemId.split('.')[0];
+  const set = findSet(setId);
+  const raw = set && set.items.find(x => x.id === itemId);
+  if (!raw) return;
+  const it = lz(raw);
+  const n = set.items.indexOf(raw) + 1;
+  // état de la phrase : exercice en cours ou revue d'une tentative
+  let given = null, done = false;
+  if (run && run.set.id === setId) { given = run.given[itemId]; done = run.res[itemId] !== undefined || !!(run.revealed && run.revealed[itemId]); }
+  else if (window.__attempt && window.__attempt.set_id === setId) {
+    const rec = window.__attempt.items.find(x => x.id === itemId);
+    if (rec) { given = rec.given; done = !!rec.done; }
+  }
+  const co = L(' : ', ': ');
+  const first = `${n}. ${plain(it)}`;
+  const lines = [first];
+  if (done) {
+    const mine = givenText(it, given);
+    if (mine) lines.push(`   ${L('Ma réponse', 'My answer')}${co}${mine}`);
+    lines.push(`   ${L('Réponse attendue', 'Expected answer')}${co}${expectedText(it).replace(/\n/g, ' / ')}`);
+    if (it.why) lines.push(`   ${L('À retenir', 'Rule')}${co}${it.why}`);
+    if (getLang() === 'fr' && it.fr) lines.push(`   En français${co}${it.fr}`);
+  }
+  const title = L('Révisions : ', 'Revision: ') + lz(set).title;
+  const old = btn.textContent;
+  btn.disabled = true;
+  try {
+    const notes = await store.listNotes();
+    const cur = notes.find(x => x.set_id === setId && /^(Revision|Révisions?)\b/.test(x.title || ''));
+    if (cur && cur.body.includes(first)) { btn.textContent = L('Déjà dans ton carnet', 'Already in your notes'); }
+    else {
+      const block = lines.join('\n');
+      await store.saveNote({ id: cur ? cur.id : undefined, title: cur ? cur.title : title, body: cur && cur.body.trim() ? cur.body.replace(/\s+$/, '') + '\n\n' + block : block, set_id: setId });
+      btn.textContent = L('✓ Ajoutée à ton carnet', '✓ Added to your notes');
+    }
+  } catch (e) {
+    btn.textContent = msgText(e.message || e);
+  }
+  setTimeout(() => { btn.disabled = false; btn.textContent = old; }, 2500);
 }
 
 async function attemptToNotes(attemptId) {
@@ -519,7 +577,7 @@ async function render() {
   try {
     if (parts.length === 0) return await viewHome();
     if (parts[0] === 'chapter') return await viewChapter(parts[1]);
-    if (parts[0] === 'ex') return viewExercise(parts[1]);
+    if (parts[0] === 'ex') return await viewExercise(parts[1]);
     if (parts[0] === 'attempt') return await viewAttempt(parts[1]);
     if (parts[0] === 'history') return await viewHistory();
     if (parts[0] === 'notes') return await viewNotes(parts[1]);
@@ -543,6 +601,7 @@ app.addEventListener('click', async e => {
   }
   else if (act === 'tab') { authTab = t.dataset.tab; viewAuth(); }
   else if (act === 'logout') { await store.signOut(); }
+  else if (act === 'tonote') sentenceToNotes(t.dataset.item, t);
   else if (act === 'check' && item) doCheck(item);
   else if (act === 'hint' && item) { run.hints[item.id] = !run.hints[item.id]; rerenderItem(item); }
   else if (act === 'reveal' && item) { run.given[item.id] = readGiven(item); run.revealed[item.id] = true; saveDraft(); rerenderItem(item); }
@@ -641,7 +700,7 @@ window.addEventListener('pagehide', () => { flushNote(); });
   store.onAuth((evt, u) => {
     const before = user && user.id;
     user = u;
-    if ((u && u.id) !== before) { attemptsCache = null; run = null; classes = null; setTimeout(render, 0); }
+    if ((u && u.id) !== before) { attemptsCache = null; accessCache = null; run = null; classes = null; setTimeout(render, 0); }
   });
   render();
 })();

@@ -39,6 +39,8 @@ const SERVER = {
   'Méthode non autorisée.': 'Method not allowed.',
   'Action inconnue.': 'Unknown action.',
   'Connexion impossible. Vérifie ton réseau et réessaie.': 'Connection failed. Check your network and try again.',
+  'Cette leçon est fermée.': 'This lesson is closed.',
+  'Confirmation manquante.': 'Confirmation missing.',
   'Mot de passe incorrect.': 'Incorrect password.',
   'Accès administrateur requis.': 'Administrator access required.',
   'Élève introuvable.': 'Student not found.',

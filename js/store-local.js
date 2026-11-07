@@ -29,6 +29,7 @@ export function createLocalStore() {
       d.session = u.id; write(d); emit('SIGNED_IN', pub(u));
     },
     async signOut() { const d = read(); d.session = null; write(d); emit('SIGNED_OUT', null); },
+    async access() { return new Proxy({}, { get: () => true, has: () => true }); },
     async listAttempts() { const d = read(); return d.attempts.filter(a => a.user_id === d.session).sort((a, b) => b.created_at.localeCompare(a.created_at)); },
     async getAttempt(id) { const d = read(); return d.attempts.find(a => a.id === id && a.user_id === d.session) || null; },
     async addAttempt({ set_id, score, total, items }) {

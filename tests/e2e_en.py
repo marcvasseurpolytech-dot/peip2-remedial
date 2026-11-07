@@ -37,11 +37,19 @@ with sync_playwright() as p:
     post('api/admin?resource=students',{'action':'approve','nom':'MARTIN'},tok)
     page.fill('input[name=code]','4321'); page.click('form button.btn'); page.wait_for_selector('text=Hello Bob')
     print('HOME EN:', page.inner_text('main').replace('\n',' | ')[:200])
+    # closed by default
+    page.goto(BASE+'#/ex/g01-guidee-a'); page.wait_for_timeout(800); assert page.locator('.item').count()==0
+    print('CLOSED EN:', page.inner_text('main').replace('\n',' | ')[:160])
+    stok=page.evaluate("JSON.parse(localStorage.getItem('peip2.session.v1')).token")
+    r=post('api/attempts',{'set_id':'g01-guidee-a','items':[{'id':'g01-guidee-a.1','given':None,'ok':True,'done':True}],'score':1,'total':1},stok); print('CLOSED POST:', r); assert r.get('error')=='Cette leçon est fermée.'
+    post('api/access',{'lesson':'G01','open':True},tok)
+    page.goto(BASE+'#/'); page.wait_for_selector('text=Hello Bob')
     page.goto(BASE+'#/chapter/G01'); page.wait_for_selector('.setrow')
     body=page.inner_text('main'); print('CHAPTER EN:', body.replace('\n',' | ')[:300])
     assert 'Present Simple and Present Continuous' in body and 'Worksheet' in body and 'Murphy supplement' in body and 'Guided set A' in body
     page.click('summary'); rc=page.inner_text('.recap'); assert 'Time markers' in rc and 'Affirmative' in rc and 'Stative verbs' in rc
     page.goto(BASE+'#/ex/g01-guidee-a'); page.wait_for_selector('.item')
+    page.click('.item:nth-of-type(1) [data-act=tonote]'); page.wait_for_selector('text=Added to your notes', timeout=8000)
     page.click('[data-act=hint]'); print('HINT EN:', page.inner_text('.hintline'))
     page.fill('.item:nth-of-type(1) .gap','drinks'); page.click('.item:nth-of-type(1) [data-act=check]')
     fb=page.inner_text('.item:nth-of-type(1) .fb'); print('FEEDBACK EN:', fb.replace('\n',' | '))
@@ -78,5 +86,11 @@ with sync_playwright() as p:
     assert 'Students' in at and 'Student site' in at and 'Sign out' in at and 'approved' in at
     assert not any(c in at for c in 'éèàç')
     adm.click('[data-tab=results]'); adm.wait_for_selector('tbody tr'); rt=adm.inner_text('body'); assert 'different exercise sets' in rt.lower() and 'sort by' in rt.lower()
+    adm.click('[data-tab=lessons]'); adm.wait_for_selector('tr[data-lesson=G01]'); lt=adm.inner_text('tr[data-lesson=G01]'); assert 'open' in lt.lower(), lt
+    adm.click('tr[data-lesson=G01] [data-act=lessonClose]'); adm.wait_for_selector('tr[data-lesson=G01] [data-act=lessonOpen]')
+    r=post('api/attempts',{'set_id':'g01-guidee-a','items':[{'id':'g01-guidee-a.1','given':None,'ok':True,'done':True}],'score':1,'total':1},stok); print('CLOSED AGAIN:', r); assert r.get('error')=='Cette leçon est fermée.'
+    adm.click('[data-tab=students]'); adm.wait_for_selector('[data-act=deleteAll]')
+    adm.click('[data-act=deleteAll]'); adm.click('[data-m=next]'); adm.fill('input[data-m=yes]','YES'); adm.click('[data-m=go]'); adm.wait_for_selector('text=No accounts yet')
+    r=post('api/admin?resource=students',{'action':'deleteAll'},tok); print('NO CONFIRM:', r); assert 'error' in r
     print('ERRORS:', errors); assert not errors
     print('EN E2E OK')

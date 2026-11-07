@@ -60,6 +60,20 @@ with sync_playwright() as p:
     page.wait_for_selector('text=Bonjour Alice')
     page.reload(); page.wait_for_selector('text=Bonjour Alice')      # session conservée
 
+    # ---- leçon fermée par défaut : pas d'exercices, ni de sauvegarde possible
+    page.goto(BASE + '#/ex/g01-guidee-a'); page.wait_for_timeout(800)
+    assert page.locator('.item').count() == 0, 'exercices visibles alors que la leçon est fermée'
+    print('CLOSED NOTICE:', page.inner_text('main').replace('\n', ' | ')[:160])
+    page.goto(BASE + '#/'); page.wait_for_selector('text=Bonjour Alice')
+    assert page.locator('a[href="#/chapter/G01"]').count() == 0 or 'opacity' in (page.get_attribute('.card:has-text("G01")', 'style') or '')
+    # le professeur ouvre G01 (onglet Lessons)
+    adm.click('[data-tab=lessons]'); adm.wait_for_selector('tr[data-lesson=G01]')
+    assert 'closed' in adm.inner_text('tr[data-lesson=G01]')
+    adm.click('tr[data-lesson=G01] [data-act=lessonOpen]'); adm.wait_for_selector('tr[data-lesson=G01] [data-act=lessonClose]')
+    assert dump()['peip2/access.json']['lessons']['G01'] is True
+    adm.click('[data-tab=students]'); adm.wait_for_selector('[data-act=approveAll]')
+    assert adm.is_disabled('[data-act=approveAll]')        # visible mais inactif : personne en attente
+
     data = page.evaluate("""async () => { const m = await import('/data/index.js'); return m.SETS.map(s => ({id:s.id, items:s.items})); }""")
     def do_set(set_id, wrong_every=0):
         page.goto(BASE + '#/ex/' + set_id); page.wait_for_selector('.item')
@@ -111,7 +125,10 @@ with sync_playwright() as p:
     page.fill('input[name=nom]', 'DUPONT'); page.fill('input[name=code]', '1234'); page.click('form button.btn'); page.wait_for_selector('.msg.err')
     page.fill('input[name=code]', '4321'); page.click('form button.btn'); page.wait_for_selector('text=Bonjour Alice')
     print('RESET CODE OK')
-    adm.click('[data-act=delete]'); adm.click('[data-act=delete]'); adm.wait_for_selector('text=No accounts yet')
+    adm.click('[data-act=delete]'); adm.wait_for_selector('text=Are you sure?')
+    adm.click('[data-m=next]'); adm.wait_for_selector('input[data-m=yes]')
+    adm.fill('input[data-m=yes]', 'yes'); assert adm.is_disabled('[data-m=go]')          # il faut taper YES en majuscules
+    adm.fill('input[data-m=yes]', 'YES'); adm.click('[data-m=go]'); adm.wait_for_selector('text=No accounts yet')
     d = dump(); print('FILES AFTER DELETE:', sorted(d.keys()))
     assert not [k for k in d if 'attempts/' in k or 'notes/' in k]
     page.reload(); page.wait_for_selector('form[data-form=signin]')    # le jeton ne vaut plus rien : compte supprimé

@@ -35,6 +35,13 @@ module.exports = handler(async (req, res, token) => {
   if (req.method === 'POST' && resource === 'students') {
     const b = body(req);
     const nom = normNom(b.nom);
+    if ((b.action === 'delete' || b.action === 'deleteAll') && b.confirm !== 'YES') return res.status(400).json({ error: 'Confirmation manquante.' });
+    if (b.action === 'deleteAll') {
+      let removed = [];
+      await update(FILE, token, { students: [] }, cur => { removed = cur.students.slice(); cur.students = []; return removed.length ? cur : undefined; }, 'admin deleteAll');
+      await mapLimit(removed, 6, async s => { await ghDelete(`attempts/${slug(s.nom)}.json`, token); await ghDelete(`notes/${slug(s.nom)}.json`, token); });
+      return res.json({ success: true, count: removed.length });
+    }
     let found = true, count = 0;
     await update(FILE, token, { students: [] }, cur => {
       if (b.action === 'approveAll') { cur.students.forEach(s => { if (s.approved !== true) { s.approved = true; count++; } }); return count ? cur : undefined; }

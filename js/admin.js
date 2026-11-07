@@ -29,7 +29,7 @@ async function api(path, { method = 'GET', body } = {}) {
 function frame(inner) {
   const logged = !!session();
   app.innerHTML = `<header class="top"><div class="in"><a class="brand" href="admin.html">Administration<small>PEIP2 English · Polytech Lille</small></a>
-    ${logged ? `<nav><a href="#" data-tab="students" class="${tab === 'students' ? 'on' : ''}">Students</a><a href="#" data-tab="results" class="${tab === 'results' ? 'on' : ''}">Results</a><a href="./">Student site</a></nav>
+    ${logged ? `<nav><a href="#" data-tab="students" class="${tab === 'students' ? 'on' : ''}">Students</a><a href="#" data-tab="lessons" class="${tab === 'lessons' ? 'on' : ''}">Lessons</a><a href="#" data-tab="results" class="${tab === 'results' ? 'on' : ''}">Results</a><a href="./">Student site</a></nav>
     <div class="who"><button class="link" data-act="logout" style="color:#e4c77d">Sign out</button></div>` : ''}</div></header>
     <main>${inner}</main>
     <footer><b>MARC VASSEUR | POLYTECH LILLE</b><br>Marc Vasseur · marc.vasseur@polytech-lille.fr</footer>`;
@@ -61,9 +61,59 @@ function viewStudents() {
   frame(`<h1>Students</h1>
     ${msg ? `<div class="msg info">${esc(msg)}</div>` : ''}
     <p>${students.length} account(s), of which <b>${pending.length}</b> awaiting approval.
-      ${pending.length ? '<button class="btn gold sm" data-act="approveAll">Approve all</button>' : ''}</p>
+      <button class="btn gold sm" data-act="approveAll" ${pending.length ? '' : 'disabled'}>Approve all pending (${pending.length})</button>
+      ${students.length ? '<button class="btn ghost sm" data-act="deleteAll" style="float:right;color:#9b1c1c;border-color:#9b1c1c">Delete all accounts</button>' : ''}</p>
     <div class="card" style="overflow-x:auto"><table><thead><tr><th>Student</th><th>Class</th><th>Status</th><th>Registered on</th><th>Actions</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="5" class="muted">No accounts yet.</td></tr>'}</tbody></table></div>`);
+}
+
+async function viewLessons() {
+  frame('<p class="muted">Loading lessons…</p>');
+  let open;
+  try { open = (await api('/api/access')).open; } catch (e) { frame(`<div class="msg err">${esc(e.message)}</div>`); return; }
+  const rows = CHAPTERS.map(ch => `<tr data-lesson="${esc(ch.id)}"><td><b>${esc(ch.id)}</b></td><td>${esc((ch.en && ch.en.title) || ch.title)}</td>
+    <td>${ch.sets.reduce((n, s) => n + s.items.length, 0)} questions</td>
+    <td>${open[ch.id] ? '<span class="pill good">open</span>' : '<span class="pill low">closed</span>'}</td>
+    <td>${open[ch.id] ? '<button class="btn ghost sm" data-act="lessonClose">Close</button>' : '<button class="btn gold sm" data-act="lessonOpen">Open</button>'}</td></tr>`).join('');
+  frame(`<h1>Lessons</h1>
+    ${msg ? `<div class="msg info">${esc(msg)}</div>` : ''}
+    <p class="small muted">Students can only use the lessons you open. Use is unlimited while a lesson is open. Closing a lesson hides it from students; their history and notes are kept.</p>
+    <p><button class="btn gold sm" data-act="lessonOpenAll">Open all</button> <button class="btn ghost sm" data-act="lessonCloseAll">Close all</button></p>
+    <div class="card" style="overflow-x:auto"><table><thead><tr><th>Lesson</th><th>Title</th><th>Size</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>`);
+}
+
+async function setLessons(ids, open) {
+  msg = '';
+  try { await api('/api/access', { method: 'POST', body: { lessons: ids, open } }); msg = open ? `Opened: ${ids.join(', ')}.` : `Closed: ${ids.join(', ')}.`; } catch (e) { msg = e.message; }
+  viewLessons();
+}
+
+// Double confirmation : un premier clic pour continuer, puis il faut taper YES.
+function confirmYes(message, onConfirm) {
+  const back = document.createElement('div');
+  back.style.cssText = 'position:fixed;inset:0;background:rgba(10,18,40,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:1rem';
+  const close = () => back.remove();
+  const step1 = () => {
+    back.innerHTML = `<div class="card" style="max-width:30rem;background:#fff"><h3>Are you sure?</h3><p>${esc(message)}</p><p><b>This cannot be undone.</b></p>
+      <p style="display:flex;gap:.6rem;justify-content:flex-end"><button class="btn ghost sm" data-m="cancel">Cancel</button><button class="btn sm" data-m="next" style="background:#9b1c1c;color:#fff">Continue</button></p></div>`;
+  };
+  const step2 = () => {
+    back.innerHTML = `<div class="card" style="max-width:30rem;background:#fff"><h3>Second confirmation</h3><p>Type <b>YES</b> in capital letters to confirm.</p>
+      <input class="t" data-m="yes" autocomplete="off" placeholder="YES" style="font-family:var(--mono)">
+      <p style="display:flex;gap:.6rem;justify-content:flex-end"><button class="btn ghost sm" data-m="cancel">Cancel</button><button class="btn sm" data-m="go" disabled style="background:#9b1c1c;color:#fff">Delete</button></p></div>`;
+    const inp = back.querySelector('input'), go = back.querySelector('[data-m=go]');
+    inp.focus();
+    inp.addEventListener('input', () => { go.disabled = inp.value !== 'YES'; });
+    inp.addEventListener('keydown', ev => { if (ev.key === 'Enter' && inp.value === 'YES') { close(); onConfirm(); } });
+  };
+  back.addEventListener('click', ev => {
+    const m = ev.target.closest('[data-m]');
+    if (ev.target === back || (m && m.dataset.m === 'cancel')) return close();
+    if (m && m.dataset.m === 'next') return step2();
+    if (m && m.dataset.m === 'go') { close(); onConfirm(); }
+  });
+  step1();
+  document.body.appendChild(back);
 }
 
 async function viewResults() {
@@ -89,6 +139,7 @@ function paintResults() {
 async function show() {
   if (!session()) return viewLogin();
   try {
+    if (tab === 'lessons') return await viewLessons();
     if (tab === 'results') return await viewResults();
     await load(); viewStudents();
   } catch (e) { if (!session()) { msg = e.message; viewLogin(); } else { frame(`<div class="msg err">${esc(e.message)}</div>`); } }
@@ -99,6 +150,7 @@ async function act(name, nom, extra = {}) {
   try {
     const r = await api('/api/admin?resource=students', { method: 'POST', body: { action: name, nom, ...extra } });
     if (name === 'approveAll') msg = `${r.count} account(s) approved.`;
+    if (name === 'deleteAll') msg = `${r.count} account(s) deleted.`;
     await load(); viewStudents();
   } catch (e) { msg = e.message; viewStudents(); }
 }
@@ -112,15 +164,18 @@ app.addEventListener('click', async e => {
   if (!t) return;
   const tr = t.closest('tr');
   const nom = tr && tr.dataset.nom;
+  const lesson = tr && tr.dataset.lesson;
   const a = t.dataset.act;
   if (a === 'logout') { sessionStorage.removeItem(KEY); return show(); }
   if (a === 'approveAll') return act('approveAll');
   if (a === 'approve') return act('approve', nom);
   if (a === 'unapprove') return act('approve', nom, { value: false });
-  if (a === 'delete') {
-    if (t.dataset.armed !== '1') { t.dataset.armed = '1'; t.textContent = 'Confirm'; return; }
-    return act('delete', nom);
-  }
+  if (a === 'lessonOpen') return setLessons([lesson], true);
+  if (a === 'lessonClose') return setLessons([lesson], false);
+  if (a === 'lessonOpenAll') return setLessons(CHAPTERS.map(c => c.id), true);
+  if (a === 'lessonCloseAll') return setLessons(CHAPTERS.map(c => c.id), false);
+  if (a === 'delete') return confirmYes(`Delete the account of ${nom}, with their exercise history and notes?`, () => act('delete', nom, { confirm: 'YES' }));
+  if (a === 'deleteAll') return confirmYes(`Delete ALL ${students.length} accounts, with their exercise history and notes?`, async () => { await act('deleteAll', undefined, { confirm: 'YES' }); });
   if (a === 'reset') {
     const cell = t.parentElement;
     if (!cell.querySelector('input')) { t.insertAdjacentHTML('afterend', ' <input class="t" data-code style="width:6ch;display:inline-block;padding:.2rem .4rem" inputmode="numeric" maxlength="4" placeholder="0000" aria-label="New code"> <button class="btn sm" data-act="resetOk">OK</button>'); cell.querySelector('input').focus(); }
