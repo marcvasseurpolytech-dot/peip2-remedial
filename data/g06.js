@@ -2,6 +2,7 @@
 // Contenu reconstruit à partir de la fiche élève, du supplément Murphy et du corrigé enseignant du hub.
 import { S, FICHE, MURPHY, C, T, F, R, W, P, ex, cl, who } from './dsl2.js';
 
+const EXTRA = ['Exercices supplémentaires', 'Extra exercises'];
 const RS = T('Transforme au discours indirect.', 'Put the sentence into reported speech.');
 const ASK = ['if', 'whether'];
 const q = (pre, rest) => ASK.map(w => `${pre} ${w} ${rest}`);
@@ -185,6 +186,54 @@ const th = [
   R("Ils ont annoncé que la fusion était confirmée.", ['They announced that the merger had been confirmed.', 'They announced that the merger was confirmed.', 'They announced the merger had been confirmed.', 'They announced the merger was confirmed.'], 'announce + that + proposition. Le passif était confirmée donne was confirmed ou had been confirmed.', 'announce + that + clause. The French passive can be rendered as was confirmed or had been confirmed.')
 ];
 
+
+/* ---------- Exercices supplémentaires (inédits) ---------- */
+const cap = x => x.charAt(0).toUpperCase() + x.slice(1);
+// Discours direct : D(['I am tired'], 'she said', '.') donne 'I am tired,' she said. et She said, 'I am tired.'
+const D = (speeches, tag, end = '.') => [].concat(speeches).flatMap(sp => end === '?'
+  ? [`'${sp}?' ${tag}.`, `${cap(tag)}, '${sp}?'`]
+  : [`'${sp},' ${tag}.`, `${cap(tag)}, '${sp}.'`]);
+const DIR = T('Réécris au discours direct (paroles exactes entre guillemets).', 'Rewrite in direct speech (the exact words, in quotation marks).');
+
+const extraA = [
+  RS("'The turbine has been running since dawn,' the technician said.", ex(['The technician said the turbine had been running since dawn.']), "Le technicien a dit que la turbine tournait depuis l'aube.", 'Present Perfect Continuous devient Past Perfect Continuous : has been running devient had been running.', 'Present perfect continuous becomes past perfect continuous: has been running becomes had been running.'),
+  RS("'We will test the prototype next week,' the project leader told us.", ex(['The project leader told us they would test the prototype the following week.', 'The project leader told us we would test the prototype the following week.']), "Le chef de projet nous a dit qu'ils testeraient le prototype la semaine suivante.", 'will devient would. next week devient the following week. we devient they, ou reste we si nous sommes inclus.', 'will becomes would. next week becomes the following week. we becomes they, or stays we if the listeners are included.'),
+  RS("'I didn't notice the leak yesterday,' the plumber admitted.", ex(["The plumber admitted he hadn't noticed the leak the day before."]), "Le plombier a reconnu qu'il n'avait pas remarqué la fuite la veille.", "Past Simple devient Past Perfect : didn't notice devient hadn't noticed. yesterday devient the day before.", 'Past simple becomes past perfect: didn\'t notice becomes hadn\'t noticed. yesterday becomes the day before.'),
+  RS("'Our servers are being upgraded now,' the manager explained.", ex(['The manager explained their servers were being upgraded then.', 'The manager explained our servers were being upgraded then.']), "Le responsable a expliqué que leurs serveurs étaient en cours de mise à niveau à ce moment-là.", 'Présent passif progressif : are being upgraded devient were being upgraded. now devient then. our devient their (ou reste our si le rapporteur est concerné).', 'Present continuous passive: are being upgraded becomes were being upgraded. now becomes then. our becomes their (or stays our if the reporter is included).'),
+  RS("'You must wear gloves in this area,' the supervisor told them.", ex(['The supervisor told them they had to wear gloves in that area.']), "Le superviseur leur a dit qu'ils devaient porter des gants dans cette zone.", 'must devient had to. you devient they. this area devient that area.', 'must becomes had to. you becomes they. this area becomes that area.'),
+  RS("'I may be late tomorrow,' she warned us.", ex(['She warned us she might be late the next day.']), "Elle nous a prévenus qu'elle serait peut-être en retard le lendemain.", 'may devient might. tomorrow devient the next day.', 'may becomes might. tomorrow becomes the next day.'),
+  RS("'The bridge was built in 1998,' the guide said.", ex(['The guide said the bridge had been built in 1998.']), "Le guide a dit que le pont avait été construit en 1998.", 'Passé simple passif : was built devient had been built (Past Perfect passif).', 'Past simple passive: was built becomes had been built (past perfect passive).'),
+  RS("'I can't repair this machine today,' he told me.", ex(["He told me he couldn't repair that machine that day."]), "Il m'a dit qu'il ne pouvait pas réparer cette machine ce jour-là.", "can't devient couldn't. this devient that. today devient that day.", 'can\'t becomes couldn\'t. this becomes that. today becomes that day.'),
+  RS("'We have never had a similar failure here,' the director claimed.", ex(['The director claimed they had never had a similar failure there.']), "Le directeur a affirmé qu'ils n'avaient jamais eu de panne similaire là.", 'Present Perfect devient Past Perfect : have never had devient had never had. here devient there.', 'Present perfect becomes past perfect: have never had becomes had never had. here becomes there.'),
+  RS("'It's going to rain all week,' the forecaster said.", ex(['The forecaster said it was going to rain all week.']), "Le prévisionniste a dit qu'il allait pleuvoir toute la semaine.", 'is going to devient was going to. Le repère all week ne change pas.', 'is going to becomes was going to. The time marker all week does not change.')
+];
+
+const extraB = [
+  DIR('She said she was exhausted after the night shift.', D(['I am exhausted after the night shift'], 'she said'), "'Je suis épuisée après le service de nuit', a-t-elle dit.", 'Past Simple (was) revient au Present Simple (am). Les paroles exactes sont entre guillemets, suivies de said.', 'Past simple (was) goes back to present simple (am). The exact words go in quotation marks, followed by said.'),
+  DIR('He told me he had already sent the invoice.', D(['I have already sent the invoice', 'I already sent the invoice'], 'he told me'), "'J'ai déjà envoyé la facture', m'a-t-il dit.", 'Past Perfect (had sent) revient au Present Perfect (have sent), ou au Past Simple dans l\'usage américain.', 'Past perfect (had sent) goes back to present perfect (have sent), or to past simple in American usage.'),
+  DIR('The technician explained that they would replace the filter the next day.', D(['We will replace the filter tomorrow', "We'll replace the filter tomorrow"], 'the technician explained'), "'Nous remplacerons le filtre demain', a expliqué le technicien.", 'would revient à will. the next day revient à tomorrow.', 'would goes back to will. the next day goes back to tomorrow.'),
+  DIR("My colleague said he couldn't open the file.", D(["I can't open the file", "I couldn't open the file"], 'my colleague said'), "'Je n'arrive pas à ouvrir le fichier', a dit mon collègue.", "couldn't peut revenir à can't (présent) ou rester couldn't (si c'était déjà du passé). Les deux se défendent.", 'couldn\'t can go back to can\'t (present) or stay couldn\'t (if it was already past). Both are defensible.'),
+  DIR('The professor told us we had to hand in the report that day.', D(['You must hand in the report today', 'You have to hand in the report today'], 'the professor told us'), "'Vous devez rendre le rapport aujourd'hui', nous a dit le professeur.", 'had to revient à must (ou have to). that day revient à today. we revient à you.', 'had to goes back to must (or have to). that day goes back to today. we goes back to you.'),
+  DIR('She admitted she had made a mistake.', D(['I made a mistake', 'I have made a mistake'], 'she admitted'), "'J'ai fait une erreur', a-t-elle reconnu.", 'Past Perfect revient au Past Simple ou au Present Perfect.', 'Past perfect goes back to past simple or present perfect.'),
+  DIR('He said the machine was making a strange noise at that moment.', D(['The machine is making a strange noise now'], 'he said'), "'La machine fait un bruit étrange en ce moment', a-t-il dit.", 'Past Continuous revient au Present Continuous. at that moment revient à now.', 'Past continuous goes back to present continuous. at that moment goes back to now.'),
+  DIR('They told us they might postpone the launch the following month.', D(['We may postpone the launch next month', 'We might postpone the launch next month'], 'they told us'), "'Nous pourrions repousser le lancement le mois prochain', nous ont-ils dit.", 'might revient à may (ou reste might). the following month revient à next month.', 'might goes back to may (or stays might). the following month goes back to next month.'),
+  DIR('The engineer said the sensors had been calibrated the day before.', D(['The sensors were calibrated yesterday'], 'the engineer said'), "'Les capteurs ont été calibrés hier', a dit l'ingénieur.", 'Past Perfect passif revient au Past Simple passif. the day before revient à yesterday.', 'Past perfect passive goes back to past simple passive. the day before goes back to yesterday.'),
+  DIR('Our manager said she was leaving for Berlin the following Monday.', D(['I am leaving for Berlin next Monday', "I'm leaving for Berlin next Monday"], 'our manager said'), "'Je pars pour Berlin lundi prochain', a dit notre responsable.", 'was leaving revient à am leaving. the following Monday revient à next Monday.', 'was leaving goes back to am leaving. the following Monday goes back to next Monday.')
+];
+
+const extraC = [
+  RS("'Have you checked the safety valve?' the inspector asked us.", ex(ASK.map(w => `The inspector asked us ${w} we had checked the safety valve.`)), "L'inspecteur nous a demandé si nous avions vérifié la soupape de sécurité.", "Question oui / non : if ou whether + sujet + verbe. Present Perfect devient Past Perfect, sans inversion.", 'Yes/no question: if or whether + subject + verb. Present perfect becomes past perfect, with no inversion.'),
+  RS("'Where did you park the van?' she asked him.", ex(['She asked him where he had parked the van.']), "Elle lui a demandé où il avait garé la camionnette.", 'Question en wh- : where + sujet + verbe. Past Simple devient Past Perfect. do/did disparaît.', 'Wh- question: where + subject + verb. Past simple becomes past perfect. do/did disappears.'),
+  RS("'Don't touch the cables,' the electrician told us.", ['The electrician told us not to touch the cables.'], "L'électricien nous a dit de ne pas toucher les câbles.", "Ordre négatif : told + personne + not to + verbe.", 'Negative command: told + person + not to + verb.'),
+  RS("'Please send me the updated schedule,' Mr Lewis asked her.", ['Mr Lewis asked her to send him the updated schedule.'], "M. Lewis lui a demandé de lui envoyer le planning mis à jour.", 'Demande : asked + personne + to + verbe. me devient him (c\'est M. Lewis qui parle). please disparaît.', 'Request: asked + person + to + verb. me becomes him (Mr Lewis is the speaker). please disappears.'),
+  RS("'What will you do if the test fails?' my supervisor asked me.", ex(['My supervisor asked me what I would do if the test failed.']), "Mon responsable m'a demandé ce que je ferais si le test échouait.", 'will devient would. Dans la subordonnée en if, fails devient failed.', 'will becomes would. In the if clause, fails becomes failed.'),
+  DIR('He asked me whether I could work on Saturday.', D(['Can you work on Saturday', 'Could you work on Saturday'], 'he asked me', '?'), "'Pouvez-vous travailler samedi ?' m'a-t-il demandé.", 'Question indirecte → directe : whether disparaît, l\'inversion revient (could devient can, ou reste could). I devient you.', 'Indirect → direct question: whether disappears, inversion returns (could becomes can, or stays could). I becomes you.'),
+  DIR('She told the students not to use their phones.', D(["Don't use your phones", 'Do not use your phones'], 'she told the students'), "'N\'utilisez pas vos téléphones', a-t-elle dit aux étudiants.", 'not to + verbe redevient un impératif négatif : Don\'t use. their devient your.', 'not to + verb goes back to a negative imperative: Don\'t use. their becomes your.'),
+  DIR('The director asked why the figures had not been published.', D(["Why haven't the figures been published", "Why weren't the figures published", 'Why have the figures not been published', 'Why were the figures not published'], 'the director asked', '?'), "'Pourquoi les chiffres n\'ont-ils pas été publiés ?' a demandé le directeur.", "L'inversion revient dans la question directe : Why haven't the figures been published ?", 'Inversion returns in the direct question: Why haven\'t the figures been published?'),
+  DIR('The foreman warned them to wear helmets.', D(['Wear your helmets', 'Wear helmets', 'Put on your helmets', 'Put your helmets on'], 'the foreman warned them'), "'Portez vos casques', les a prévenus le contremaître.", 'to + verbe redevient un impératif : Wear your helmets.', 'to + verb goes back to an imperative: Wear your helmets.'),
+  DIR('I asked her if she was going to attend the conference.', D(['Are you going to attend the conference'], 'I asked her', '?'), "'Allez-vous assister à la conférence ?' lui ai-je demandé.", 'if disparaît, l\'inversion revient : Are you going to attend...? she devient you.', 'if disappears, inversion returns: Are you going to attend...? she becomes you.')
+];
+
 export const G06 = {
   id: 'G06',
   title: 'Le discours indirect (Reported Speech)',
@@ -201,7 +250,10 @@ export const G06 = {
     'g06-m6d': ['Ordre des mots', 'Word order'],
     'g06-bonus': ['Verbes introducteurs', 'Reporting verbs'],
     'g06-niv-c': ['Discours indirect : corrections', 'Reported speech: corrections'],
-    'g06-m6b-2': ['Discours indirect : corrections', 'Reported speech: corrections']
+    'g06-m6b-2': ['Discours indirect : corrections', 'Reported speech: corrections'],
+    'g06-x1': ['Discours indirect : concordance des temps', 'Reported speech: backshift'],
+    'g06-x2': ['Discours indirect : du discours indirect au direct', 'Reported speech: from indirect to direct'],
+    'g06-x3': ['Discours indirect : questions et ordres, dans les deux sens', 'Reported speech: questions and commands, both directions']
   },
   sets: [
     S('g06-guidee-a', FICHE, ['Série guidée A : phrases affirmatives', 'Guided set A: statements'], 'B1', ['Complète le discours indirect. Chaque phrase propose un indice.', 'Complete the reported speech. Each sentence comes with a hint.'], guideeA),
@@ -217,6 +269,9 @@ export const G06 = {
     S('g06-m6b-2', MURPHY, ['Unité 6B : corriger les phrases (2/2)', 'Unit 6B: correcting sentences (2/2)'], 'B1+', ['Corrige les erreurs.', 'Correct the mistakes.'], m6b2),
     S('g06-m6c', MURPHY, ['Unité 6C : ordres et demandes rapportés', 'Unit 6C: reported commands and requests'], 'B1+', ['tell / ask + personne + to + verbe.', 'tell / ask + person + to + verb.'], m6c),
     S('g06-m6d', MURPHY, ['Unité 6D : remettre les mots dans l\'ordre', 'Unit 6D: sentence building'], 'B1+', ['Écris la phrase complète avec les mots dans le bon ordre.', 'Write the complete sentence with the words in the right order.'], m6d),
+    S('g06-x1', EXTRA, ['Supplément A : du direct à l\'indirect (affirmations)', 'Extra A: direct to indirect (statements)'], 'B1+', ['Mets chaque phrase au discours indirect.', 'Put each sentence into reported speech.'], extraA),
+    S('g06-x2', EXTRA, ['Supplément B : de l\'indirect au direct', 'Extra B: indirect to direct'], 'B2', ['Retrouve les paroles exactes : remonte la concordance des temps.', 'Recover the exact words: undo the backshift.'], extraB),
+    S('g06-x3', EXTRA, ['Supplément C : questions et ordres, dans les deux sens', 'Extra C: questions and commands, both directions'], 'B2+', ['Cinq phrases vers l\'indirect, cinq vers le direct.', 'Five sentences to indirect, five to direct.'], extraC),
     S('g06-th', MURPHY, ['Unité TH : thème grammatical', 'Unit TH: translation'], 'B1+', ['Traduis en anglais, puis compare avec le modèle.', 'Translate into English, then compare with the model.'], th)
   ],
   recap: {

@@ -7,10 +7,13 @@ import { G05 } from './g05.js';
 import { G06 } from './g06.js';
 import { G07 } from './g07.js';
 import { G08 } from './g08.js';
+import { G09 } from './g09.js';
+import { G10 } from './g10.js';
+import { G11 } from './g11.js';
 import { G22 } from './g22.js';
 import { WH } from './wh.js';
 
-export const CHAPTERS = [G01, G02, G03, G04, G05, G06, G07, G08, G22, WH];
+export const CHAPTERS = [G01, G02, G03, G04, G05, G06, G07, G08, G09, G10, G11, G22, WH];
 
 // Textes anglais par chapitre (même ordre d'items que le chapitre français).
 const EN = { G01: G01_EN };

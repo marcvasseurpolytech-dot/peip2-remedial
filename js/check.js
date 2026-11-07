@@ -8,6 +8,7 @@ export function norm(s) {
   x = x.replace(/n't\b/g, ' not');
   x = x.replace(/\b(he|she|it|that|there|what|who|where|how|here)'s\b/g, '$1 is');
   x = x.replace(/'m\b/g, ' am').replace(/'re\b/g, ' are');
+  x = x.replace(/(^|[\s(])'+/g, '$1').replace(/'+(?=[\s.,;:!?)]|$)/g, '');
   x = x.replace(/[.,;:!?]/g, ' ');
   return x.replace(/\s+/g, ' ').trim();
 }

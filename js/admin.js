@@ -231,12 +231,17 @@ function paintContentList() {
   const groups = contentRows();
   const n = groups.reduce((t, g) => t + g.rows.length, 0);
   const filtered = !!(cf.skill || cf.q.trim());
-  document.getElementById('clist').innerHTML = `<p class="small muted">${n} sentence(s) in ${groups.length} exercise set(s).</p>` + (groups.map(g => `
-    <details class="card" style="margin-bottom:.7rem" ${filtered || cf.chapter && groups.length === 1 ? 'open' : ''}><summary>${esc(g.ch.id)} · ${esc(g.set.title)} <span class="badge">${esc(g.set.level)}</span> <span class="small muted">${g.rows.length} sentence(s)</span></summary>
+  const byCh = new Map();
+  for (const g of groups) { if (!byCh.has(g.ch.id)) byCh.set(g.ch.id, { ch: g.ch, sets: [] }); byCh.get(g.ch.id).sets.push(g); }
+  const setHTML = g => `
+    <details class="cset" style="margin:.4rem 0 .4rem .8rem" ${filtered ? 'open' : ''}><summary>${esc(g.set.title)} <span class="badge">${esc(g.set.level)}</span> <span class="small muted">${g.rows.length} sentence(s)</span></summary>
       <div style="overflow-x:auto"><table style="margin-top:.6rem"><thead><tr><th>#</th><th>Sentence</th><th>Corrigé</th><th>Explanation</th><th>Skill</th></tr></thead><tbody>
       ${g.rows.map(r => { const it = enOf(r.raw); return `<tr><td class="small muted">${r.i + 1}</td><td>${sentenceHTML(it)}</td><td>${answerHTML(it)}</td>
         <td class="small">${esc(it.why || '')}${it.hint ? `<div class="muted">Hint: ${esc(it.hint)}</div>` : ''}</td><td class="small"><a href="#" data-skill="${esc(r.sk.key)}">${esc(r.sk.en)}</a></td></tr>`; }).join('')}
-      </tbody></table></div></details>`).join('') || '<p class="muted">Nothing matches.</p>');
+      </tbody></table></div></details>`;
+  document.getElementById('clist').innerHTML = `<p class="small muted">${n} sentence(s) in ${groups.length} exercise set(s).</p>` + ([...byCh.values()].map(c => `
+    <details class="card cch" style="margin-bottom:.6rem" ${filtered || cf.chapter ? 'open' : ''}><summary><b>${esc(c.ch.id)}</b> · ${esc(enOf(c.ch).title)} <span class="small muted">· ${c.sets.length} exercise(s), ${c.sets.reduce((t, g) => t + g.rows.length, 0)} sentence(s)</span></summary>
+      ${c.sets.map(setHTML).join('')}</details>`).join('') || '<p class="muted">Nothing matches.</p>');
 }
 function viewContent() {
   const idx = itemIndex();
