@@ -1,7 +1,7 @@
 // Langue de l'interface : français (par défaut) ou anglais. Choix mémorisé dans ce navigateur.
 const KEY = 'peip2.lang';
-let lang = 'fr';
-try { if (localStorage.getItem(KEY) === 'en') lang = 'en'; } catch (e) { /* stockage indisponible */ }
+let lang = 'en'; // anglais par défaut ; le choix de l'élève est mémorisé
+try { if (localStorage.getItem(KEY) === 'fr') lang = 'fr'; } catch (e) { /* stockage indisponible */ }
 
 export const getLang = () => lang;
 export function setLang(l) {
@@ -38,12 +38,22 @@ const SERVER = {
   'Identifiant manquant.': 'Missing identifier.',
   'Méthode non autorisée.': 'Method not allowed.',
   'Action inconnue.': 'Unknown action.',
-  'Connexion impossible. Vérifie ton réseau et réessaie.': 'Connection failed. Check your network and try again.'
+  'Connexion impossible. Vérifie ton réseau et réessaie.': 'Connection failed. Check your network and try again.',
+  'Mot de passe incorrect.': 'Incorrect password.',
+  'Accès administrateur requis.': 'Administrator access required.',
+  'Élève introuvable.': 'Student not found.',
+  "ADMIN_HASH n'est pas configuré sur Vercel.": 'ADMIN_HASH is not configured on Vercel.',
+  'Serveur mal configuré (GITHUB_TOKEN manquant).': 'Server misconfigured (GITHUB_TOKEN missing).',
+  'Serveur mal configuré (DATA_REPO manquant).': 'Server misconfigured (DATA_REPO missing).'
 };
 
-export function msgText(m) {
+export const msgText = m => translateServer(m, lang === 'en');
+// Pour l'administration, toujours en anglais.
+export const msgTextEn = m => translateServer(m, true);
+
+function translateServer(m, en) {
   const s = String(m == null ? '' : m);
-  if (lang !== 'en') return s;
+  if (!en) return s;
   if (SERVER[s]) return SERVER[s];
   let x = /^Le nom « (.+) » est déjà inscrit\. Connecte-toi plutôt\.$/.exec(s);
   if (x) return `The name "${x[1]}" is already registered. Please sign in instead.`;

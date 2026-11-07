@@ -14,9 +14,12 @@ with sync_playwright() as p:
     page.on('pageerror', lambda e: errors.append(str(e)))
     page.route('**/fonts.g*', lambda r: r.abort())
     page.goto(BASE); page.wait_for_selector('form[data-form=signin]')
-    assert 'Connexion' in page.inner_text('.tabs')
+    assert 'Sign in' in page.inner_text('.tabs') and 'Connexion' not in page.inner_text('body')   # anglais par défaut
     page.fill('input[name=nom]','martin')
-    page.click('[data-act=lang]')                       # passage en anglais, champ conservé en mémoire
+    page.click('[data-act=lang]')                       # passage en français, champ conservé en mémoire
+    page.wait_for_selector('form[data-form=signin]')
+    assert 'Connexion' in page.inner_text('.tabs') and page.input_value('input[name=nom]')=='MARTIN'
+    page.click('[data-act=lang]')                       # retour en anglais
     page.wait_for_selector('form[data-form=signin]')
     txt=page.inner_text('body'); print('EN LOGIN:', txt.replace('\n',' | ')[:260])
     assert 'Sign in' in txt and 'Create an account' in txt and 'Connexion' not in txt
@@ -45,7 +48,7 @@ with sync_playwright() as p:
     assert 'en français' not in fb.lower() and 'expected answer' in fb.lower() and 'always indicates a habit' in fb
     page.fill('.item:nth-of-type(2) .gap','is cry'); page.click('.item:nth-of-type(2) [data-act=check]')
     fb2=page.inner_text('.item:nth-of-type(2) .fb'); assert 'not quite' in fb2.lower() and 'your answer' in fb2.lower()
-    page.click('[data-act=lang]'); page.wait_for_selector('.item')   # retour en français en plein exercice : l'état est conservé
+    page.click('[data-act=lang]'); page.wait_for_selector('.item')   # passage en français en plein exercice : l'état est conservé
     assert 'en français' in page.inner_text('.item:nth-of-type(1) .fb').lower()
     assert page.input_value('.item:nth-of-type(2) .gap')=='is cry'
     page.click('[data-act=lang]'); page.wait_for_selector('.item')
@@ -66,5 +69,14 @@ with sync_playwright() as p:
     assert 'Exercise : Bonus: going further' in nb or 'Exercise' in nb
     page.goto(BASE+'#/history'); page.wait_for_selector('table'); h=page.inner_text('main'); print('HISTORY EN:', h.replace('\n',' | ')[:200]); assert 'My history' in h and 'Review' in h
     page.reload(); page.wait_for_selector('main'); assert page.evaluate("localStorage.getItem('peip2.lang')")=='en' and 'My history' in page.inner_text('main')
+    adm = page.context.new_page(); adm.route('**/fonts.g*', lambda r: r.abort()); adm.on('pageerror', lambda e: errors.append(str(e)))
+    adm.goto(BASE+'admin.html'); adm.wait_for_selector('form[data-form=login]')
+    assert 'Administrator password' in adm.inner_text('body')
+    adm.fill('input[name=pw]','nope'); adm.click('form button.btn'); adm.wait_for_selector('.msg.err'); assert adm.inner_text('.msg.err')=='Incorrect password.', adm.inner_text('.msg.err')
+    adm.fill('input[name=pw]','admin-test'); adm.click('form button.btn'); adm.wait_for_selector('table')
+    at=adm.inner_text('body'); print('ADMIN EN:', at.replace('\n',' | ')[:220])
+    assert 'Students' in at and 'Student site' in at and 'Sign out' in at and 'approved' in at
+    assert not any(c in at for c in 'éèàç')
+    adm.click('[data-tab=results]'); adm.wait_for_selector('tbody tr'); rt=adm.inner_text('body'); assert 'different exercise sets' in rt.lower() and 'sort by' in rt.lower()
     print('ERRORS:', errors); assert not errors
     print('EN E2E OK')

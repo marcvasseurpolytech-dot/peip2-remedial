@@ -13,6 +13,7 @@ def ctl(**kw):
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
     ctx = b.new_context(viewport={'width': 1100, 'height': 900})
+    ctx.add_init_script("try{ if(location.pathname.indexOf('admin')<0) localStorage.setItem('peip2.lang','fr'); }catch(e){}")
     page = ctx.new_page()
     page.on('console', lambda m: errors.append(('console', m.text)) if m.type == 'error' and 'fonts' not in m.text and 'ERR_FAILED' not in m.text and '40' not in m.text[:3] else None)
     page.on('pageerror', lambda e: errors.append(('pageerror', str(e))))
@@ -49,9 +50,9 @@ with sync_playwright() as p:
     adm.fill('input[name=pw]', 'nope'); adm.click('form button.btn'); adm.wait_for_selector('.msg.err')
     print('ADMIN BAD PW:', adm.inner_text('.msg.err'))
     adm.fill('input[name=pw]', 'admin-test'); adm.click('form button.btn')
-    adm.wait_for_selector('text=en attente de validation')
+    adm.wait_for_selector('text=awaiting approval')
     adm.screenshot(path='/tmp/s_admin.png', full_page=True)
-    adm.click('[data-act=approve]'); adm.wait_for_selector('text=validé')
+    adm.click('[data-act=approve]'); adm.wait_for_selector('text=approved')
     assert dump()['peip2/students.json']['students'][0]['approved'] is True
 
     # ---- connexion OK
@@ -101,16 +102,16 @@ with sync_playwright() as p:
     page.goto(BASE + '#/'); page.wait_for_selector('text=Bonjour Alice'); page.screenshot(path='/tmp/s_dash.png', full_page=True)
 
     # ---- admin : résultats, nouveau code, suppression en cascade
-    adm.click('[data-tab=results]'); adm.wait_for_selector('text=Résultats'); adm.wait_for_selector('tbody tr')
+    adm.click('[data-tab=results]'); adm.wait_for_selector('text=Results'); adm.wait_for_selector('tbody tr')
     print('ADMIN RESULTS:', adm.inner_text('tbody tr').replace('\n', ' | ').replace('\t', ' '))
     adm.screenshot(path='/tmp/s_admin_res.png', full_page=True)
     adm.click('[data-tab=students]'); adm.wait_for_selector('[data-act=reset]')
-    adm.click('[data-act=reset]'); adm.fill('input[data-code]', '4321'); adm.click('[data-act=resetOk]'); adm.wait_for_selector('text=Nouveau code enregistré')
+    adm.click('[data-act=reset]'); adm.fill('input[data-code]', '4321'); adm.click('[data-act=resetOk]'); adm.wait_for_selector('text=New code saved')
     page.click('[data-act=logout]'); page.wait_for_selector('form[data-form=signin]')
     page.fill('input[name=nom]', 'DUPONT'); page.fill('input[name=code]', '1234'); page.click('form button.btn'); page.wait_for_selector('.msg.err')
     page.fill('input[name=code]', '4321'); page.click('form button.btn'); page.wait_for_selector('text=Bonjour Alice')
     print('RESET CODE OK')
-    adm.click('[data-act=delete]'); adm.click('[data-act=delete]'); adm.wait_for_selector('text=Aucun compte')
+    adm.click('[data-act=delete]'); adm.click('[data-act=delete]'); adm.wait_for_selector('text=No accounts yet')
     d = dump(); print('FILES AFTER DELETE:', sorted(d.keys()))
     assert not [k for k in d if 'attempts/' in k or 'notes/' in k]
     page.reload(); page.wait_for_selector('form[data-form=signin]')    # le jeton ne vaut plus rien : compte supprimé
