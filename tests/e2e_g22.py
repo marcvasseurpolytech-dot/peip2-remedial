@@ -68,4 +68,31 @@ with sync_playwright() as p:
     assert 'ok' in page.get_attribute('.item:nth-of-type(8)','class')
     page.fill('.item:nth-of-type(13) input.wide','Where did they meet the director in?'); page.click('.item:nth-of-type(13) [data-act=check]')
     assert 'ko' in page.get_attribute('.item:nth-of-type(13)','class')
+    # granularité : une série ouverte seule dans un chapitre fermé (G03), puis une série fermée dans un chapitre ouvert
+    att=lambda sid: post('api/attempts',{'set_id':sid,'items':[{'id':sid+'.1','given':'x','ok':True,'done':True}],'score':1,'total':1},stok)
+    assert att('g03-niv-a').get('error')=='Cette leçon est fermée.'
+    r=post('api/access',{'sets':['g03-niv-a'],'open':True},tok); assert r['sets']=={'g03-niv-a':True} and 'G03' not in r['open'], r
+    assert 'error' not in att('g03-niv-a') and att('g03-niv-b').get('error')=='Cette leçon est fermée.'
+    page.goto(BASE+'#/chapter/G03'); page.wait_for_selector('.setrow'); page.wait_for_timeout(500)
+    rows=page.locator('.setrow'); closed=page.locator('.setrow .pill.low'); assert closed.count()==rows.count()-1, (closed.count(), rows.count())
+    assert page.locator('a[href="#/ex/g03-niv-a"]').count()==1 and page.locator('a[href="#/ex/g03-niv-b"]').count()==0
+    page.goto(BASE+'#/ex/g03-niv-b'); page.wait_for_timeout(700); assert page.locator('.item').count()==0
+    page.goto(BASE+'#/ex/g03-niv-a'); page.wait_for_selector('.item')
+    r=post('api/access',{'lesson':'G03','open':True},tok); assert r['open'].get('G03') and r['sets']=={}, r     # chapitre entier : réglages à l'unité effacés
+    assert 'error' not in att('g03-niv-b')
+    r=post('api/access',{'sets':['g03-niv-b'],'open':False},tok); assert r['sets']=={'g03-niv-b':False}, r
+    assert att('g03-niv-b').get('error')=='Cette leçon est fermée.' and 'error' not in att('g03-niv-a')
+    r=post('api/access',{'sets':['g03-niv-b'],'open':True},tok); assert r['sets']=={}, r                       # retour à l'état du chapitre : plus de réglage inutile
+    assert post('api/access',{'sets':['x-1']  ,'open':True},tok).get('error')
+    assert post('api/access',{'sets':['g03-niv-b'],'open':True}).get('error')                                   # sans jeton admin
+    post('api/access',{'lessons':['G03'],'open':False},tok)
+    # interface admin : une série à la fois
+    adm=page.context.new_page(); adm.route('**/fonts.g*', lambda r: r.abort()); adm.goto(BASE+'admin.html'); adm.wait_for_selector('form[data-form=login]')
+    adm.fill('input[name=pw]','admin-test'); adm.click('form button.btn'); adm.wait_for_selector('[data-tab=lessons]')
+    adm.click('[data-tab=lessons]'); adm.wait_for_selector('[data-lesson=G03]')
+    adm.click('[data-lesson=G03] summary'); adm.wait_for_selector('[data-lesson=G03] [data-set=g03-niv-c] [data-act=setOpen]')
+    adm.click('[data-lesson=G03] [data-set=g03-niv-c] [data-act=setOpen]'); adm.wait_for_selector('[data-lesson=G03] [data-set=g03-niv-c] [data-act=setClose]')
+    assert adm.locator('[data-lesson=G03] details').get_attribute('open') is not None          # reste déployé après l'action
+    assert '1 of' in adm.inner_text('[data-lesson=G03]')
+    adm.click('[data-lesson=G03] [data-act=lessonOpen]'); adm.wait_for_selector('[data-lesson=G03] .pill.good >> text=all open')
     print('G22 E2E OK' if not errors else ('ERRORS: '+str(errors)))

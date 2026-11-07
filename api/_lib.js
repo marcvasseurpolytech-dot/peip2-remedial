@@ -139,7 +139,19 @@ function handler(fn) {
 }
 const body = req => (req.body && typeof req.body === 'object' ? req.body : (() => { try { return JSON.parse(req.body || '{}'); } catch (e) { return {}; } })());
 
+// g01-niv-a -> G01, wh-03 -> WH
+const lessonOfSet = setId => { const m = /^(g\d{2}|wh)-/.exec(String(setId || '')); return m ? m[1].toUpperCase() : null; };
+// Une série est ouverte si elle est ouverte à l'unité, sinon si sa leçon l'est.
+const isSetOpen = (acc, setId) => {
+  const d = (acc && acc.data) || {};
+  const lesson = lessonOfSet(setId);
+  if (!lesson) return false;
+  if (d.sets && typeof d.sets[setId] === 'boolean') return d.sets[setId];
+  return !!(d.lessons && d.lessons[lesson] === true);
+};
+
 module.exports = {
+  lessonOfSet, isSetOpen,
   CLASSES, ghGet, ghPut, ghDelete, update, slug, normNom, sha256hex, safeEqual,
   issueStudentToken, studentFrom, checkAdminPassword, adminConfigured, issueAdminToken, isAdmin,
   throttled, noteFailure, clearFailures, handler, body, StorageError

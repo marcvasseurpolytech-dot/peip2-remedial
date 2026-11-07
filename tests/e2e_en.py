@@ -79,8 +79,8 @@ with sync_playwright() as p:
     assert 'Students' in at and 'Student site' in at and 'Sign out' in at and 'approved' in at
     assert not any(c in at for c in 'éèàç')
     adm.click('[data-tab=results]'); adm.wait_for_selector('tbody tr'); rt=adm.inner_text('body'); assert 'different exercise sets' in rt.lower() and 'sort by' in rt.lower()
-    adm.click('[data-tab=lessons]'); adm.wait_for_selector('tr[data-lesson=G01]'); lt=adm.inner_text('tr[data-lesson=G01]'); assert 'open' in lt.lower(), lt
-    adm.click('tr[data-lesson=G01] [data-act=lessonClose]'); adm.wait_for_selector('tr[data-lesson=G01] [data-act=lessonOpen]')
+    adm.click('[data-tab=lessons]'); adm.wait_for_selector('[data-lesson=G01]'); lt=adm.inner_text('[data-lesson=G01]'); assert 'open' in lt.lower(), lt
+    adm.click('[data-lesson=G01] [data-act=lessonClose]'); adm.wait_for_selector('[data-lesson=G01] .pill.low')
     r=post('api/attempts',{'set_id':'g01-guidee-a','items':[{'id':'g01-guidee-a.1','given':None,'ok':True,'done':True}],'score':1,'total':1},stok); print('CLOSED AGAIN:', r); assert r.get('error')=='Cette leçon est fermée.'
     adm.click('[data-tab=students]'); adm.wait_for_selector('[data-act=deleteAll]')
     adm.click('[data-act=deleteAll]'); adm.click('[data-m=next]'); adm.fill('input[data-m=yes]','YES'); adm.click('[data-m=go]'); adm.wait_for_selector('text=No accounts yet')

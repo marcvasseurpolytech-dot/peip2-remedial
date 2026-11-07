@@ -67,9 +67,9 @@ with sync_playwright() as p:
     page.goto(BASE + '#/'); page.wait_for_selector('text=Bonjour Alice')
     assert page.locator('a[href="#/chapter/G01"]').count() == 0 or 'opacity' in (page.get_attribute('.card:has-text("G01")', 'style') or '')
     # le professeur ouvre G01 (onglet Lessons)
-    adm.click('[data-tab=lessons]'); adm.wait_for_selector('tr[data-lesson=G01]')
-    assert 'closed' in adm.inner_text('tr[data-lesson=G01]')
-    adm.click('tr[data-lesson=G01] [data-act=lessonOpen]'); adm.wait_for_selector('tr[data-lesson=G01] [data-act=lessonClose]')
+    adm.click('[data-tab=lessons]'); adm.wait_for_selector('[data-lesson=G01]')
+    assert 'closed' in adm.inner_text('[data-lesson=G01]')
+    adm.click('[data-lesson=G01] [data-act=lessonOpen]'); adm.wait_for_selector('[data-lesson=G01] .pill.good')
     assert dump()['peip2/access.json']['lessons']['G01'] is True
     adm.click('[data-tab=students]'); adm.wait_for_selector('[data-act=approveAll]')
     assert adm.is_disabled('[data-act=approveAll]')        # visible mais inactif : personne en attente

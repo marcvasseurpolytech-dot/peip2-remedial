@@ -10,7 +10,7 @@ let classes = null;
 let attemptsCache = null;
 let run = null; // exercice en cours : { set, given, res, revealed, hints }
 let notesState = null;
-let accessCache = null; // leçons ouvertes par l'enseignant : { G01: true, ... }
+let accessCache = null; // ouvertures décidées par l'enseignant : { open: { G01: true }, sets: { 'g01-niv-a': false } }
 
 /* ---------- utilitaires ---------- */
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -25,6 +25,9 @@ async function getAttempts(force) {
   return attemptsCache;
 }
 
+// Une série est ouverte si l'enseignant l'a ouverte seule, sinon si son chapitre l'est.
+const setIsOpen = (acc, set) => (typeof acc.sets[set.id] === 'boolean' ? acc.sets[set.id] : !!acc.open[set.chapter]);
+const chapterIsOpen = (acc, ch) => ch.sets.some(s => setIsOpen(acc, s));
 async function getAccess(force) {
   if (force || !accessCache) accessCache = await store.access();
   return accessCache;
@@ -126,11 +129,11 @@ async function viewHome() {
   const totalScore = attempts.reduce((s, a) => s + a.score, 0);
   const totalMax = attempts.reduce((s, a) => s + a.total, 0);
   const avg = totalMax ? Math.round((100 * totalScore) / totalMax) : null;
-  const drafts = listDrafts().filter(d => open[d.set.chapter]);
+  const drafts = listDrafts().filter(d => setIsOpen(open, d.set));
   const chapters = CHAPTERS.map(ch => {
     const done = ch.sets.filter(s => best.has(s.id)).length;
     const p = Math.round((100 * done) / ch.sets.length);
-    if (!open[ch.id]) return `<div class="card" style="opacity:.65"><h3>${esc(ch.id)} · ${esc(lz(ch).title)}</h3>
+    if (!chapterIsOpen(open, ch)) return `<div class="card" style="opacity:.65"><h3>${esc(ch.id)} · ${esc(lz(ch).title)}</h3>
       <p class="small muted">${L("Pas encore ouverte. Ton enseignant l'ouvrira bientôt.", 'Not open yet. Your teacher will open it soon.')}</p></div>`;
     return `<div class="card"><h3>${esc(ch.id)} · ${esc(lz(ch).title)}</h3>
       <div class="bar" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div>
@@ -161,7 +164,7 @@ async function viewChapter(id) {
   const ch0 = findChapter(id);
   if (!ch0) return viewNotFound();
   const open = await getAccess(true);
-  if (!open[ch0.id]) { setApp(closedNotice(), 'home'); return; }
+  if (!chapterIsOpen(open, ch0)) { setApp(closedNotice(), 'home'); return; }
   const ch = lz(ch0);
   const attempts = await getAttempts();
   const best = bestBySet(attempts);
@@ -186,6 +189,8 @@ async function viewChapter(id) {
     const b = best.get(s.id);
     const dr = loadDraft(s.id);
     const hasDraft = dr && Object.keys(dr.res || {}).length;
+    if (!setIsOpen(open, s)) return `<div class="setrow" style="opacity:.6"><div><span class="t">${esc(s.title)}</span><span class="badge">${esc(s.level)}</span>
+      <div class="d">${L("Pas encore ouvert. Ton enseignant l'ouvrira bientôt.", 'Not open yet. Your teacher will open it soon.')}</div></div><span class="pill low">${L('Fermé', 'Closed')}</span></div>`;
     return `<div class="setrow"><div><span class="t">${esc(s.title)}</span><span class="badge">${esc(s.level)}</span>
       <div class="d">${esc(s.desc)} · ${s.items.length} question(s)</div></div>
       <div style="display:flex;gap:.6rem;align-items:center">${b ? `<span class="pill ${pillClass(b.best)}" title="${L('Meilleur score', 'Best score')}">${b.best} %</span><span class="small muted">${b.count}×</span>` : ''}
@@ -328,7 +333,7 @@ async function viewExercise(setId) {
   const set = findSet(setId);
   if (!set) return viewNotFound();
   const open = await getAccess(true);
-  if (!open[set.chapter]) { run = null; setApp(closedNotice(), 'home'); return; }
+  if (!setIsOpen(open, set)) { run = null; setApp(closedNotice(), 'home'); return; }
   if (!run || run.set.id !== setId) {
     const d = loadDraft(setId) || {};
     run = { set, given: d.given || {}, res: d.res || {}, revealed: d.revealed || {}, hints: {}, confirm: false };

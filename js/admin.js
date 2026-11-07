@@ -67,24 +67,41 @@ function viewStudents() {
     <tbody>${rows || '<tr><td colspan="5" class="muted">No accounts yet.</td></tr>'}</tbody></table></div>`);
 }
 
+let expanded = new Set();   // chapitres dont la liste des séries est déployée
 async function viewLessons() {
   frame('<p class="muted">Loading lessons…</p>');
-  let open;
-  try { open = (await api('/api/access')).open; } catch (e) { frame(`<div class="msg err">${esc(e.message)}</div>`); return; }
-  const rows = CHAPTERS.map(ch => `<tr data-lesson="${esc(ch.id)}"><td><b>${esc(ch.id)}</b></td><td>${esc((ch.en && ch.en.title) || ch.title)}</td>
-    <td>${ch.sets.reduce((n, s) => n + s.items.length, 0)} questions</td>
-    <td>${open[ch.id] ? '<span class="pill good">open</span>' : '<span class="pill low">closed</span>'}</td>
-    <td>${open[ch.id] ? '<button class="btn ghost sm" data-act="lessonClose">Close</button>' : '<button class="btn gold sm" data-act="lessonOpen">Open</button>'}</td></tr>`).join('');
+  let acc;
+  try { acc = await api('/api/access'); } catch (e) { frame(`<div class="msg err">${esc(e.message)}</div>`); return; }
+  const open = acc.open || {}, sets = acc.sets || {};
+  const isOpen = (set, ch) => (typeof sets[set.id] === 'boolean' ? sets[set.id] : !!open[ch.id]);
+  const cards = CHAPTERS.map(ch => {
+    const n = ch.sets.filter(st => isOpen(st, ch)).length;
+    const status = n === ch.sets.length ? '<span class="pill good">all open</span>' : n === 0 ? '<span class="pill low">closed</span>' : `<span class="pill mid">${n} of ${ch.sets.length} open</span>`;
+    const rows = ch.sets.map(st => `<tr data-set="${esc(st.id)}"><td>${esc((st.en && st.en.title) || st.title)}</td><td class="small muted">${st.items.length} questions</td>
+      <td>${isOpen(st, ch) ? '<span class="pill good">open</span>' : '<span class="pill low">closed</span>'}</td>
+      <td>${isOpen(st, ch) ? '<button class="btn ghost sm" data-act="setClose">Close</button>' : '<button class="btn gold sm" data-act="setOpen">Open</button>'}</td></tr>`).join('');
+    return `<div class="card" data-lesson="${esc(ch.id)}" style="margin-bottom:.8rem">
+      <div style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between">
+        <div><b>${esc(ch.id)}</b> · ${esc((ch.en && ch.en.title) || ch.title)} <span class="small muted">· ${ch.sets.reduce((k, st) => k + st.items.length, 0)} questions</span> ${status}</div>
+        <div style="display:flex;gap:.4rem"><button class="btn gold sm" data-act="lessonOpen"${n === ch.sets.length ? ' disabled' : ''}>Open all</button><button class="btn ghost sm" data-act="lessonClose"${n === 0 ? ' disabled' : ''}>Close all</button></div></div>
+      <details data-exp="${esc(ch.id)}"${expanded.has(ch.id) ? ' open' : ''} style="margin-top:.5rem"><summary class="small">Exercises (${ch.sets.length}): open them one by one</summary>
+        <table style="margin-top:.4rem"><thead><tr><th>Exercise</th><th>Size</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></details></div>`;
+  }).join('');
   frame(`<h1>Lessons</h1>
     ${msg ? `<div class="msg info">${esc(msg)}</div>` : ''}
-    <p class="small muted">Students can only use the lessons you open. Use is unlimited while a lesson is open. Closing a lesson hides it from students; their history and notes are kept.</p>
-    <p><button class="btn gold sm" data-act="lessonOpenAll">Open all</button> <button class="btn ghost sm" data-act="lessonCloseAll">Close all</button></p>
-    <div class="card" style="overflow-x:auto"><table><thead><tr><th>Lesson</th><th>Title</th><th>Size</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>`);
+    <p class="small muted">Students only see what you open. You can open a whole lesson at once (Open all) or each exercise one by one, which is handy when a lesson is new. Use is unlimited while an exercise is open. Closing hides it from students; their history and notes are kept.</p>
+    <p><button class="btn gold sm" data-act="lessonOpenAll">Open everything</button> <button class="btn ghost sm" data-act="lessonCloseAll">Close everything</button></p>
+    ${cards}`);
 }
 
 async function setLessons(ids, open) {
   msg = '';
   try { await api('/api/access', { method: 'POST', body: { lessons: ids, open } }); msg = open ? `Opened: ${ids.join(', ')}.` : `Closed: ${ids.join(', ')}.`; } catch (e) { msg = e.message; }
+  viewLessons();
+}
+async function setSetsOpen(ids, open) {
+  msg = '';
+  try { await api('/api/access', { method: 'POST', body: { sets: ids, open } }); msg = open ? `Exercise opened.` : `Exercise closed.`; } catch (e) { msg = e.message; }
   viewLessons();
 }
 
@@ -164,12 +181,15 @@ app.addEventListener('click', async e => {
   if (!t) return;
   const tr = t.closest('tr');
   const nom = tr && tr.dataset.nom;
-  const lesson = tr && tr.dataset.lesson;
+  const lessonEl = t.closest('[data-lesson]');
+  const lesson = lessonEl && lessonEl.dataset.lesson;
   const a = t.dataset.act;
   if (a === 'logout') { sessionStorage.removeItem(KEY); return show(); }
   if (a === 'approveAll') return act('approveAll');
   if (a === 'approve') return act('approve', nom);
   if (a === 'unapprove') return act('approve', nom, { value: false });
+  if (a === 'setOpen') return setSetsOpen([t.closest('tr').dataset.set], true);
+  if (a === 'setClose') return setSetsOpen([t.closest('tr').dataset.set], false);
   if (a === 'lessonOpen') return setLessons([lesson], true);
   if (a === 'lessonClose') return setLessons([lesson], false);
   if (a === 'lessonOpenAll') return setLessons(CHAPTERS.map(c => c.id), true);
@@ -188,6 +208,9 @@ app.addEventListener('click', async e => {
     msg = `New code saved for ${nom}.`; return viewStudents();
   }
 });
+
+// mémorise les chapitres déployés pour qu'ils le restent après chaque action
+app.addEventListener('toggle', e => { const d = e.target; if (d.dataset && d.dataset.exp) { if (d.open) expanded.add(d.dataset.exp); else expanded.delete(d.dataset.exp); } }, true);
 
 app.addEventListener('change', e => {
   const t = e.target;

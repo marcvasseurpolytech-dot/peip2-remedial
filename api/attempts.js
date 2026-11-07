@@ -1,7 +1,6 @@
-const { ghGet, update, slug, studentFrom, handler, body } = require('./_lib');
+const { ghGet, update, slug, studentFrom, handler, body, lessonOfSet, isSetOpen } = require('./_lib');
 
-// g01-niv-a -> G01, wh-03 -> WH : une leçon fermée n'accepte plus de nouvelles tentatives.
-const lessonOf = setId => { const m = /^(g\d{2}|wh)-/.exec(String(setId || '')); return m ? m[1].toUpperCase() : null; };
+// Une série fermée n'accepte plus de nouvelles tentatives (voir isSetOpen dans _lib).
 
 const MAX_PER_STUDENT = 2000;
 const rnd = () => require('crypto').randomUUID();
@@ -39,9 +38,8 @@ module.exports = handler(async (req, res, token) => {
     if (!/^[a-z0-9-]{1,40}$/.test(String(b.set_id || '')) || !items || !Number.isInteger(score) || !Number.isInteger(total) || score < 0 || total < 0 || score > total) {
       return res.status(400).json({ error: 'Données invalides.' });
     }
-    const lesson = lessonOf(b.set_id);
     const acc = await ghGet('access.json', token);
-    if (!lesson || !(acc && acc.data.lessons && acc.data.lessons[lesson] === true)) return res.status(403).json({ error: 'Cette leçon est fermée.' });
+    if (!lessonOfSet(b.set_id) || !isSetOpen(acc, b.set_id)) return res.status(403).json({ error: 'Cette leçon est fermée.' });
     const attempt = { id: rnd(), set_id: b.set_id, score, total, items, created_at: new Date().toISOString() };
     await update(file, token, { nom, attempts: [] }, cur => {
       cur.nom = nom;
