@@ -77,7 +77,7 @@ function shell(inner, active) {
     <a class="brand" href="#/">PEIP2 Anglais<small>Remédiation · Polytech Lille</small></a>${nav}
   </div></header>
   <main>${inner}</main>
-  <footer><b>MARC VASSEUR | POLYTECH LILLE</b><br>Marc Vasseur · <a href="mailto:marc.vasseur@polytech-lille.fr" style="color:#e4c77d">marc.vasseur@polytech-lille.fr</a></footer>`;
+  <footer><b>MARC VASSEUR | POLYTECH LILLE</b><br>Marc Vasseur · <a href="mailto:marc.vasseur@polytech-lille.fr" style="color:#e4c77d">marc.vasseur@polytech-lille.fr</a><br><a href="/admin" style="color:#c9cfdd;opacity:.6;font-size:.75rem">Admin</a></footer>`;
 }
 
 function setApp(html, active) { app.innerHTML = shell(html, active); window.scrollTo(0, 0); }
