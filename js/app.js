@@ -80,7 +80,7 @@ function shell(inner, active) {
       <a href="#/history" class="${active === 'history' ? 'on' : ''}">${L('Historique', 'History')}</a>
       <a href="#/notes" class="${active === 'notes' ? 'on' : ''}">${L('Carnet de corrections', 'Correction notebook')}</a>
     </nav>` : '';
-  const who = `<div class="who">${user ? `${esc(user.name)} <button class="link" data-act="logout" style="color:#e4c77d">${L('Déconnexion', 'Sign out')}</button> ` : ''}<button class="link" data-act="lang" style="color:#e4c77d" aria-label="${L('Switch to English', 'Passer en français')}">${L('English', 'Français')}</button></div>`;
+  const who = `<div class="who">${user ? `${esc(user.name)} <button class="link" data-act="logout" style="color:#e4c77d">${L('Déconnexion', 'Sign out')}</button> ` : ''}</div>`;
   return `${demo}
   <header class="top"><div class="in">
     <a class="brand" href="#/">${L('PEIP2 Anglais', 'PEIP2 English')}<small>${L('Remédiation', 'Remedial classes')} · Polytech Lille</small></a>${nav}${who}
