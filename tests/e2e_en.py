@@ -1,0 +1,70 @@
+import json, hashlib, urllib.request
+from playwright.sync_api import sync_playwright
+BASE='http://localhost:8765/'
+def post(path, body, tok=None):
+    h={'Content-Type':'application/json'}
+    if tok: h['Authorization']='Bearer '+tok
+    r=urllib.request.Request(BASE+path, data=json.dumps(body).encode(), headers=h, method='POST')
+    try: return json.load(urllib.request.urlopen(r))
+    except urllib.error.HTTPError as e: return json.load(e)
+errors=[]
+with sync_playwright() as p:
+    b=p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
+    page=b.new_context(viewport={'width':1100,'height':900}).new_page()
+    page.on('pageerror', lambda e: errors.append(str(e)))
+    page.route('**/fonts.g*', lambda r: r.abort())
+    page.goto(BASE); page.wait_for_selector('form[data-form=signin]')
+    assert 'Connexion' in page.inner_text('.tabs')
+    page.fill('input[name=nom]','martin')
+    page.click('[data-act=lang]')                       # passage en anglais, champ conservé en mémoire
+    page.wait_for_selector('form[data-form=signin]')
+    txt=page.inner_text('body'); print('EN LOGIN:', txt.replace('\n',' | ')[:260])
+    assert 'Sign in' in txt and 'Create an account' in txt and 'Connexion' not in txt
+    assert page.evaluate('document.documentElement.lang')=='en'
+    assert page.input_value('input[name=nom]')=='MARTIN'
+    page.click('[data-tab=up]'); page.wait_for_selector('select[name=dept]')
+    page.fill('input[name=prenom]','Bob'); page.select_option('select[name=dept]','PEIP2 G1')
+    page.fill('input[name=code]','4321'); page.fill('input[name=code2]','4321')
+    page.click('form button.btn'); page.wait_for_selector('.msg.info'); print('SIGNUP EN:', page.inner_text('.msg.info'))
+    page.fill('input[name=nom]','MARTIN'); page.fill('input[name=code]','4321'); page.click('form button.btn'); page.wait_for_selector('.msg.err')
+    print('PENDING EN:', page.inner_text('.msg.err')); assert 'waiting for your teacher' in page.inner_text('.msg.err')
+    page.fill('input[name=code]','0000'); page.click('form button.btn'); page.wait_for_selector('.msg.err')
+    print('BAD CODE EN:', page.inner_text('.msg.err')); assert 'Incorrect NAME or code' in page.inner_text('.msg.err')
+    tok=post('api/admin?resource=login',{'password':'admin-test'})['token']
+    post('api/admin?resource=students',{'action':'approve','nom':'MARTIN'},tok)
+    page.fill('input[name=code]','4321'); page.click('form button.btn'); page.wait_for_selector('text=Hello Bob')
+    print('HOME EN:', page.inner_text('main').replace('\n',' | ')[:200])
+    page.goto(BASE+'#/chapter/G01'); page.wait_for_selector('.setrow')
+    body=page.inner_text('main'); print('CHAPTER EN:', body.replace('\n',' | ')[:300])
+    assert 'Present Simple and Present Continuous' in body and 'Worksheet' in body and 'Murphy supplement' in body and 'Guided set A' in body
+    page.click('summary'); rc=page.inner_text('.recap'); assert 'Time markers' in rc and 'Affirmative' in rc and 'Stative verbs' in rc
+    page.goto(BASE+'#/ex/g01-guidee-a'); page.wait_for_selector('.item')
+    page.click('[data-act=hint]'); print('HINT EN:', page.inner_text('.hintline'))
+    page.fill('.item:nth-of-type(1) .gap','drinks'); page.click('.item:nth-of-type(1) [data-act=check]')
+    fb=page.inner_text('.item:nth-of-type(1) .fb'); print('FEEDBACK EN:', fb.replace('\n',' | '))
+    assert 'en français' not in fb.lower() and 'expected answer' in fb.lower() and 'always indicates a habit' in fb
+    page.fill('.item:nth-of-type(2) .gap','is cry'); page.click('.item:nth-of-type(2) [data-act=check]')
+    fb2=page.inner_text('.item:nth-of-type(2) .fb'); assert 'not quite' in fb2.lower() and 'your answer' in fb2.lower()
+    page.click('[data-act=lang]'); page.wait_for_selector('.item')   # retour en français en plein exercice : l'état est conservé
+    assert 'en français' in page.inner_text('.item:nth-of-type(1) .fb').lower()
+    assert page.input_value('.item:nth-of-type(2) .gap')=='is cry'
+    page.click('[data-act=lang]'); page.wait_for_selector('.item')
+    # exercice avec annotation anglaise et traduction
+    page.goto(BASE+'#/ex/g01-guidee-b'); page.wait_for_selector('.item')
+    assert '(thinking in progress)' in page.inner_text('.item:nth-of-type(2)') and 'réflexion' not in page.inner_text('main')
+    page.goto(BASE+'#/ex/g01-niv-c'); page.wait_for_selector('.item')
+    t=page.inner_text('main'); assert 'Correct the sentence. Write the whole sentence' in t and 'Translate into English.' in t
+    page.fill('.item:nth-of-type(1) input.wide','She knows the answer.'); page.click('.item:nth-of-type(1) [data-act=check]')
+    assert 'Correct' in page.inner_text('.item:nth-of-type(1) .fb')
+    page.click('.item:nth-of-type(6) [data-act=reveal]'); print('MODEL EN:', page.inner_text('.item:nth-of-type(6) .fb').replace('\n',' | '))
+    page.goto(BASE+'#/ex/g01-bonus'); page.wait_for_selector('.item')
+    page.click('.item:nth-of-type(1) [data-act=reveal]'); fbb=page.inner_text('.item:nth-of-type(1) .fb'); assert 'standard grammar' in fbb, fbb
+    page.click('.item:nth-of-type(1) [data-act=self][data-v="1"]')
+    page.click('[data-act=finish]'); page.click('[data-act=finish]'); page.wait_for_selector('.score')
+    print('ATTEMPT EN:', page.inner_text('main').replace('\n',' | ')[:200])
+    page.click('[data-act=tonotes]'); page.wait_for_selector('#nbody'); nb=page.input_value('#nbody'); print('NOTE EN:', nb[:200].replace('\n',' | '))
+    assert 'Exercise : Bonus: going further' in nb or 'Exercise' in nb
+    page.goto(BASE+'#/history'); page.wait_for_selector('table'); h=page.inner_text('main'); print('HISTORY EN:', h.replace('\n',' | ')[:200]); assert 'My history' in h and 'Review' in h
+    page.reload(); page.wait_for_selector('main'); assert page.evaluate("localStorage.getItem('peip2.lang')")=='en' and 'My history' in page.inner_text('main')
+    print('ERRORS:', errors); assert not errors
+    print('EN E2E OK')

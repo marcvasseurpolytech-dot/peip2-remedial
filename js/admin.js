@@ -78,7 +78,7 @@ function paintResults() {
   };
   const rows = results.slice().sort(sorters[sortKey]).map(r => `
     <tr><td><b>${esc(r.nom)}</b> ${esc(r.prenom)}</td><td>${esc(r.dept)}</td><td>${r.sets} / ${SETS.length}</td><td>${r.attempts}</td>
-    <td>${r.avg === null ? '–' : `<span class="pill ${r.avg >= 80 ? 'good' : r.avg >= 50 ? 'mid' : 'low'}">${r.avg} %</span>`}</td><td class="small muted">${fmt(r.last)}</td></tr>`).join('');
+    <td>${r.avg === null ? '-' : `<span class="pill ${r.avg >= 80 ? 'good' : r.avg >= 50 ? 'mid' : 'low'}">${r.avg} %</span>`}</td><td class="small muted">${fmt(r.last)}</td></tr>`).join('');
   frame(`<h1>Résultats</h1>
     <p class="small muted">Trier par : ${[['nom', 'nom'], ['dept', 'classe'], ['sets', 'exercices faits'], ['avg', 'moyenne'], ['last', 'dernière activité']].map(([k, l]) => `<button class="link" data-sort="${k}" style="${sortKey === k ? 'font-weight:700' : ''}">${l}</button>`).join(' · ')}</p>
     <div class="card" style="overflow-x:auto"><table><thead><tr><th>Élève</th><th>Classe</th><th>Exercices différents</th><th>Tentatives</th><th>Moyenne</th><th>Dernière activité</th></tr></thead>
