@@ -1,5 +1,6 @@
 import { CHAPTERS, SETS, findSet } from '../data/index.js';
 import { msgTextEn } from './i18n.js';
+import { itemIndex } from './skills.js';
 
 const app = document.getElementById('app');
 const KEY = 'peip2.admin.v1';
@@ -29,7 +30,7 @@ async function api(path, { method = 'GET', body } = {}) {
 function frame(inner) {
   const logged = !!session();
   app.innerHTML = `<header class="top"><div class="in"><a class="brand" href="admin.html">Administration<small>PEIP2 English · Polytech Lille</small></a>
-    ${logged ? `<nav><a href="#" data-tab="students" class="${tab === 'students' ? 'on' : ''}">Students</a><a href="#" data-tab="lessons" class="${tab === 'lessons' ? 'on' : ''}">Lessons</a><a href="#" data-tab="results" class="${tab === 'results' ? 'on' : ''}">Results</a><a href="./">Student site</a></nav>
+    ${logged ? `<nav><a href="#" data-tab="students" class="${tab === 'students' ? 'on' : ''}">Students</a><a href="#" data-tab="lessons" class="${tab === 'lessons' ? 'on' : ''}">Lessons</a><a href="#" data-tab="results" class="${tab === 'results' ? 'on' : ''}">Results</a><a href="#" data-tab="skills" class="${tab === 'skills' ? 'on' : ''}">Skills</a><a href="./">Student site</a></nav>
     <div class="who"><button class="link" data-act="logout" style="color:#e4c77d">Sign out</button></div>` : ''}</div></header>
     <main>${inner}</main>
     <footer><b>MARC VASSEUR | POLYTECH LILLE</b><br>Marc Vasseur · marc.vasseur@polytech-lille.fr</footer>`;
@@ -153,11 +154,44 @@ function paintResults() {
     <tbody>${rows || '<tr><td colspan="6" class="muted">No approved student yet.</td></tr>'}</tbody></table></div>`);
 }
 
+// Compétences : pourcentage de phrases justes (dernier résultat de chaque phrase), par compétence et par classe.
+async function viewSkills() {
+  frame('<p class="muted">Loading skills…</p>');
+  let rows, cls;
+  try {
+    rows = (await api('/api/admin?resource=results&items=1')).rows;
+    cls = (await api('/api/admin?resource=students')).classes;
+  } catch (e) { frame(`<div class="msg err">${esc(e.message)}</div>`); return; }
+  const idx = itemIndex();
+  const cols = ['All', ...[...new Set(rows.map(r => r.dept).concat(cls))].filter(c => rows.some(r => r.dept === c))];
+  const acc = new Map(); // skill -> { en, cells: { col: { ok, n, students:Set } } }
+  for (const r of rows) {
+    for (const [id, v] of Object.entries(r.items || {})) {
+      const e = idx.get(id);
+      if (!e) continue;
+      const sk = acc.get(e.skill.key) || { en: e.skill.en, cells: {} };
+      for (const c of ['All', r.dept]) {
+        const cell = sk.cells[c] || (sk.cells[c] = { ok: 0, n: 0, st: new Set() });
+        cell.ok += v; cell.n++; cell.st.add(r.nom);
+      }
+      acc.set(e.skill.key, sk);
+    }
+  }
+  const pc = c => (c && c.n ? Math.round(100 * c.ok / c.n) : null);
+  const list = [...acc.values()].sort((a, b) => (pc(a.cells.All) ?? 101) - (pc(b.cells.All) ?? 101));
+  const cell = c => (c && c.n ? `<span class="pill ${pc(c) >= 80 ? 'good' : pc(c) >= 50 ? 'mid' : 'low'}" title="${c.ok} / ${c.n} sentences, ${c.st.size} student(s)">${pc(c)} %</span> <span class="small muted">${c.st.size}</span>` : '<span class="muted">-</span>');
+  frame(`<h1>Skills</h1>
+    <p class="small muted">Share of sentences marked right (latest result of each sentence, students' own points included), by skill and class. The small number is how many students have data. Weakest skills first.</p>
+    <div class="card" style="overflow-x:auto"><table><thead><tr><th>Skill</th>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
+    <tbody>${list.map(s => `<tr><td>${esc(s.en)}</td>${cols.map(c => `<td>${cell(s.cells[c])}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${cols.length + 1}" class="muted">No data yet.</td></tr>`}</tbody></table></div>`);
+}
+
 async function show() {
   if (!session()) return viewLogin();
   try {
     if (tab === 'lessons') return await viewLessons();
     if (tab === 'results') return await viewResults();
+    if (tab === 'skills') return await viewSkills();
     await load(); viewStudents();
   } catch (e) { if (!session()) { msg = e.message; viewLogin(); } else { frame(`<div class="msg err">${esc(e.message)}</div>`); } }
 }

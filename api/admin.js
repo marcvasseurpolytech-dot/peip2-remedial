@@ -75,7 +75,16 @@ module.exports = handler(async (req, res, token) => {
         sc += t.score; tot += t.total;
         if (!last || t.created_at > last) last = t.created_at;
       }
-      return { nom: s.nom, prenom: s.prenom, dept: s.dept, attempts: list.length, sets: Object.keys(bySet).length, avg: tot ? Math.round(100 * sc / tot) : null, last, bySet };
+      const row = { nom: s.nom, prenom: s.prenom, dept: s.dept, attempts: list.length, sets: Object.keys(bySet).length, avg: tot ? Math.round(100 * sc / tot) : null, last, bySet };
+      if ((req.query || {}).items) {
+        // dernier résultat connu de chaque phrase : 1 (juste) ou 0 (faux), la tentative la plus récente l'emporte
+        const latest = {};
+        for (const t of list.slice().sort((x, y) => x.created_at.localeCompare(y.created_at))) {
+          for (const x of t.items || []) if (x.done && (x.ok === true || x.ok === false)) latest[x.id] = x.ok ? 1 : 0;
+        }
+        row.items = latest;
+      }
+      return row;
     });
     return res.json({ rows });
   }

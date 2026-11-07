@@ -1,6 +1,7 @@
 import { CHAPTERS, SETS, findSet, findChapter } from '../data/index.js';
 import { gradeItem, hasAnswer, expectedText, isScored } from './check.js';
 import { createStore } from './store.js';
+import { itemIndex, latestByItem, skillStats } from './skills.js';
 import { L, getLang, setLang, locale, lz, msgText } from './i18n.js';
 
 const store = createStore();
@@ -23,6 +24,27 @@ const scoredItems = set => set.items.filter(isScored);
 async function getAttempts(force) {
   if (force || !attemptsCache) attemptsCache = await store.listAttempts();
   return attemptsCache;
+}
+// Les reprises (onglet « À retravailler ») comptent pour les compétences, pas pour les scores d'exercices.
+const isReal = a => a.kind !== 'redo';
+async function getRealAttempts(force) { return (await getAttempts(force)).filter(isReal); }
+// Compétences et phrases à retravailler, d'après le dernier résultat de chaque phrase.
+async function skillData(force) {
+  const attempts = await getAttempts(force);
+  const open = await getAccess();
+  const latest = latestByItem(attempts);
+  const idx = itemIndex();
+  const openIds = new Set();
+  const wrong = [];
+  for (const [id, r] of latest) {
+    const e = idx.get(id);
+    if (!e || !setIsOpen(open, e.set)) continue;
+    openIds.add(id);
+    if (!r.ok) wrong.push(id);
+  }
+  const visible = new Map([...latest].filter(([id]) => openIds.has(id)));
+  redoCount = wrong.length;
+  return { latest: visible, stats: skillStats(visible), wrong };
 }
 
 // Une série est ouverte si l'enseignant l'a ouverte seule, sinon si son chapitre l'est.
@@ -49,7 +71,7 @@ function bestBySet(attempts) {
 /* ---------- brouillons (reprise d'un exercice interrompu) ---------- */
 const draftKey = setId => 'peip2.draft.' + user.id + '.' + setId;
 function saveDraft() {
-  if (!run) return;
+  if (!run || run.redo) return;
   try { localStorage.setItem(draftKey(run.set.id), JSON.stringify({ given: run.given, res: run.res, revealed: run.revealed })); } catch (e) { /* stockage indisponible */ }
 }
 function loadDraft(setId) {
@@ -73,6 +95,8 @@ function listDrafts() {
 }
 
 /* ---------- gabarit général ---------- */
+let redoCount = null; // nombre de phrases à retravailler (mis à jour à chaque calcul des compétences)
+const redoBadge = () => (redoCount ? ` <span class="pill low" style="padding:0 .45rem">${redoCount}</span>` : '');
 function shell(inner, active) {
   document.title = L('PEIP2 Anglais · Polytech Lille', 'PEIP2 English · Polytech Lille');
   const demo = store.mode === 'demo'
@@ -81,6 +105,8 @@ function shell(inner, active) {
     <nav>
       <a href="#/" class="${active === 'home' ? 'on' : ''}">${L('Tableau de bord', 'Dashboard')}</a>
       <a href="#/history" class="${active === 'history' ? 'on' : ''}">${L('Historique', 'History')}</a>
+      <a href="#/skills" class="${active === 'skills' ? 'on' : ''}">${L('Mes compétences', 'My skills')}</a>
+      <a href="#/redo" class="${active === 'redo' ? 'on' : ''}">${L('À retravailler', 'To redo')}${redoBadge()}</a>
       <a href="#/notes" class="${active === 'notes' ? 'on' : ''}">${L('Carnet de corrections', 'Correction notebook')}</a>
     </nav>` : '';
   const who = `<div class="who">${user ? `${esc(user.name)} <button class="link" data-act="logout" style="color:#e4c77d">${L('Déconnexion', 'Sign out')}</button> ` : ''}</div>`;
@@ -123,9 +149,10 @@ async function viewAuth(msg) {
 /* ---------- tableau de bord ---------- */
 async function viewHome() {
   setApp(`<p class="muted">${L('Chargement…', 'Loading…')}</p>`, 'home');
-  const attempts = await getAttempts();
+  const attempts = await getRealAttempts();
   const open = await getAccess(true);
   const best = bestBySet(attempts);
+  const sk = await skillData();
   const totalScore = attempts.reduce((s, a) => s + a.score, 0);
   const totalMax = attempts.reduce((s, a) => s + a.total, 0);
   const avg = totalMax ? Math.round((100 * totalScore) / totalMax) : null;
@@ -152,6 +179,7 @@ async function viewHome() {
       <div class="card stat"><div class="n">${avg === null ? '-' : avg + ' %'}</div><div class="l">${L('score moyen', 'average score')}</div></div>
       <div class="card stat"><div class="n" style="font-size:1.1rem;padding-top:.5rem">${attempts[0] ? fmtDate(attempts[0].created_at) : L('Pas encore', 'Not yet')}</div><div class="l">${L('dernière activité', 'last activity')}</div></div>
     </div>
+    ${skillsCard(sk)}
     ${drafts.length ? `<div class="card" style="margin-bottom:1.4rem"><h3>${L('À reprendre', 'Resume')}</h3>${drafts.map(d => `<div class="setrow"><div><span class="t">${esc(lz(d.set).title)}</span><div class="d">${L(`${d.done} réponse(s) déjà vérifiée(s)`, `${d.done} answer(s) already checked`)}</div></div><a class="btn" href="#/ex/${esc(d.set.id)}">${L('Reprendre', 'Resume')}</a></div>`).join('')}</div>` : ''}
     <h2>${L('Chapitres', 'Chapters')}</h2><div class="grid g2" style="margin-bottom:1.6rem">${chapters}</div>
     <h2>${L('Derniers exercices', 'Recent exercises')}</h2>
@@ -166,7 +194,7 @@ async function viewChapter(id) {
   const open = await getAccess(true);
   if (!chapterIsOpen(open, ch0)) { setApp(closedNotice(), 'home'); return; }
   const ch = lz(ch0);
-  const attempts = await getAttempts();
+  const attempts = await getRealAttempts();
   const best = bestBySet(attempts);
   const r = ch.recap;
   const rows = (arr) => arr.map(([a, b]) => `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`).join('');
@@ -300,6 +328,12 @@ function itemHTML(rawIt, idx, st, review) {
       ? `<div class="actions"><button class="btn sm gold" data-act="self" data-v="done" data-item="${esc(it.id)}">${L("J'ai terminé", "I'm done")}</button></div>`
       : `<div class="actions"><span class="small muted">${L('Compare avec ta réponse :', 'Compare with your answer:')}</span><button class="btn sm gold" data-act="self" data-v="1" data-item="${esc(it.id)}">${L("Je l'avais bon", 'I got it right')}</button><button class="btn sm ghost" data-act="self" data-v="0" data-item="${esc(it.id)}">${L('À revoir', 'Review this')}</button></div>`);
   } else if (review && !checked) fb = feedbackHTML(it, null, given);
+  if (checked && !review && isScored(it) && (res.ok === true || res.ok === false)) {
+    fb += `<div class="actions mark"><span class="small muted">${L('Ton point :', 'Your point:')}</span>
+      <button class="btn sm ${res.ok ? 'gold' : 'ghost'}" data-act="mark" data-v="1" data-item="${esc(it.id)}" aria-pressed="${res.ok}">1</button>
+      <button class="btn sm ${res.ok ? 'ghost' : 'gold'}" data-act="mark" data-v="0" data-item="${esc(it.id)}" aria-pressed="${!res.ok}">0</button>
+      <span class="small muted">${L("Pas d'accord avec la correction ? Tu peux changer ton point.", 'Disagree with the verdict? You can change your point.')}</span></div>`;
+  }
   const cls = checked ? (res.ok === true ? 'ok' : res.ok === false ? 'ko' : '') : '';
   return `<article class="item ${cls}" data-id="${esc(it.id)}">
     <div class="num">${idx + 1}. ${review && !checked ? L('non traité', 'not attempted') : ''}</div>
@@ -381,12 +415,38 @@ function doCheck(it) {
     if (!n) { n = document.createElement('div'); n.className = 'hintline needs'; n.textContent = it.t === 'choice' ? L('Choisis une réponse.', 'Choose an answer.') : L('Complète tous les champs avant de vérifier.', 'Fill in every field before checking.'); root.appendChild(n); }
     return;
   }
-  run.res[it.id] = { ok: gradeItem(it, given).ok };
+  const auto = gradeItem(it, given).ok;
+  run.res[it.id] = { ok: auto, auto };
   saveDraft();
   rerenderItem(it);
 }
 
+async function finishRedo() {
+  const bySet = new Map();
+  for (const it of run.set.items) {
+    const r = run.res[it.id];
+    if (!r) continue;
+    const sid = it.id.split('.')[0];
+    if (!bySet.has(sid)) bySet.set(sid, []);
+    bySet.get(sid).push({ id: it.id, given: run.given[it.id] === undefined ? null : run.given[it.id], ok: r.ok, done: true, ...(r.adj || r.self ? { adj: true } : {}) });
+  }
+  const b = document.getElementById('finishBtn');
+  b.disabled = true; b.textContent = L('Enregistrement…', 'Saving…');
+  try {
+    for (const [sid, items] of bySet) {
+      await store.addAttempt({ set_id: sid, kind: 'redo', score: items.filter(x => x.ok === true).length, total: items.length, items });
+    }
+    attemptsCache = null; run = null;
+    location.hash = '#/redo';
+    render();
+  } catch (e) {
+    b.disabled = false; b.textContent = L('Terminer et enregistrer', 'Finish and save');
+    document.getElementById('finishNote').textContent = L("L'enregistrement a échoué : ", 'Saving failed: ') + msgText(e.message || e) + L(' Tes réponses sont conservées, réessaie.', ' Your answers are kept, please try again.');
+  }
+}
+
 async function finishRun() {
+  if (run.redo) return finishRedo();
   const set = run.set;
   const left = set.items.filter(it => run.res[it.id] === undefined).length;
   if (left && !run.confirm) {
@@ -399,7 +459,7 @@ async function finishRun() {
   b.disabled = true; b.textContent = L('Enregistrement…', 'Saving…');
   const items = set.items.map(it => {
     const r = run.res[it.id];
-    return { id: it.id, given: run.given[it.id] === undefined ? null : run.given[it.id], ok: r ? r.ok : false, done: !!r };
+    return { id: it.id, given: run.given[it.id] === undefined ? null : run.given[it.id], ok: r ? r.ok : false, done: !!r, ...(r && (r.adj || r.self) ? { adj: true } : {}) };
   });
   const score = scoredItems(set).filter(it => run.res[it.id] && run.res[it.id].ok === true).length;
   try {
@@ -508,7 +568,7 @@ async function attemptToNotes(attemptId) {
 /* ---------- historique ---------- */
 async function viewHistory() {
   setApp(`<p class="muted">${L('Chargement…', 'Loading…')}</p>`, 'history');
-  const attempts = await getAttempts(true);
+  const attempts = await getRealAttempts(true);
   const filter = sessionStorage.getItem('peip2.hfilter') || '';
   const shown = filter ? attempts.filter(a => a.set_id === filter) : attempts;
   const usedSets = [...new Set(attempts.map(a => a.set_id))].map(findSet).filter(Boolean);
@@ -519,6 +579,76 @@ async function viewHistory() {
       ${shown.map(a => { const set = findSet(a.set_id); return `<tr><td>${fmtDate(a.created_at)}</td><td>${esc(set ? lz(set).title : a.set_id)}</td><td><span class="pill ${pillClass(pct(a))}">${a.score}/${a.total}</span></td><td>${pct(a)} %</td><td><a href="#/attempt/${esc(a.id)}">${L('Revoir', 'Review')}</a></td></tr>`; }).join('')}
       </tbody></table>` : `<p class="muted">${L("Ton historique est vide pour l'instant.", 'Your history is empty for now.')}</p>`}
     </div>`, 'history');
+}
+
+/* ---------- compétences et phrases à retravailler ---------- */
+const skillName = sk => L(sk.fr, sk.en);
+const levelOf = p => (p >= 80 ? L('Solide', 'Solid') : p >= 50 ? L('En progrès', 'Getting there') : L('À travailler', 'Needs work'));
+function skillsCard(sk) {
+  if (!sk.stats.length) return '';
+  const weak = sk.stats.slice(0, 3);
+  return `<div class="card" style="margin-bottom:1.4rem"><h3>${L('Mes compétences à travailler en priorité', 'My skills to work on first')}</h3>
+    ${weak.map(x => `<div class="setrow"><div><span class="t">${esc(skillName(x))}</span><div class="d">${x.ok} / ${x.n}</div></div><span class="pill ${pillClass(x.pct)}">${x.pct} %</span></div>`).join('')}
+    <p style="margin-top:.8rem"><a class="btn sm" href="#/skills">${L('Voir toutes mes compétences', 'See all my skills')}</a>
+    ${sk.wrong.length ? ` <a class="btn gold sm" href="#/redo">${L(`Refaire mes ${sk.wrong.length} phrase(s) fausse(s)`, `Redo my ${sk.wrong.length} wrong sentence(s)`)}</a>` : ''}</p></div>`;
+}
+
+async function viewSkills() {
+  setApp(`<p class="muted">${L('Chargement…', 'Loading…')}</p>`, 'skills');
+  const sk = await skillData(true);
+  const body = sk.stats.length ? `<div class="card"><table><thead><tr><th>${L('Compétence', 'Skill')}</th><th style="width:34%">${L('Réussite', 'Success')}</th><th>${L('Points', 'Points')}</th><th>${L('Niveau', 'Level')}</th><th></th></tr></thead><tbody>
+    ${sk.stats.map(x => `<tr><td>${esc(skillName(x))}</td>
+      <td><div class="bar" aria-hidden="true"><i style="width:${x.pct}%"></i></div></td>
+      <td>${x.ok} / ${x.n}</td><td><span class="pill ${pillClass(x.pct)}">${x.pct} % · ${levelOf(x.pct)}</span></td>
+      <td>${x.wrong.length ? `<a class="btn ghost sm" href="#/redo/${esc(x.key)}">${L(`Refaire (${x.wrong.length})`, `Redo (${x.wrong.length})`)}</a>` : ''}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="small muted">${L("Un point par phrase, d'après ta dernière réponse (ou ton propre point si tu l'as corrigé). Les compétences les plus faibles sont en haut.", 'One point per sentence, based on your latest answer (or your own point if you changed it). The weakest skills are at the top.')}</p>`
+    : `<div class="card"><p class="muted">${L("Rien à afficher pour l'instant. Fais un exercice et enregistre-le : tes compétences apparaîtront ici.", 'Nothing to show yet. Complete an exercise and save it: your skills will appear here.')}</p></div>`;
+  setApp(`<h1>${L('Mes compétences', 'My skills')}</h1>${body}`, 'skills');
+}
+
+async function startRedo(skillKey) {
+  const sk = await skillData(true);
+  const idx = itemIndex();
+  const ids = sk.wrong.filter(id => !skillKey || idx.get(id).skill.key === skillKey);
+  if (!ids.length) { location.hash = '#/redo'; render(); return; }
+  // ordre stable : par série puis par position dans la série
+  const items = ids.map(id => idx.get(id)).sort((a, b) => (a.set.id === b.set.id ? a.set.items.indexOf(a.item) - b.set.items.indexOf(b.item) : a.set.id.localeCompare(b.set.id))).map(e => e.item);
+  run = { redo: true, set: { id: 'redo', items }, given: {}, res: {}, revealed: {}, hints: {}, confirm: false, skillKey };
+  location.hash = '#/redo/run';
+  render();
+}
+
+async function viewRedo(arg) {
+  if (arg === 'run' && run && run.redo) return viewRedoRun();
+  if (run && run.redo) run = null;
+  setApp(`<p class="muted">${L('Chargement…', 'Loading…')}</p>`, 'redo');
+  const sk = await skillData(true);
+  const idx = itemIndex();
+  const key = arg && arg !== 'run' ? arg : '';
+  const shown = sk.stats.filter(x => x.wrong.length && (!key || x.key === key));
+  const n = shown.reduce((s, x) => s + x.wrong.length, 0);
+  setApp(`<h1>${L('À retravailler', 'To redo')}</h1>
+    ${n ? `<p class="muted">${L(`${n} phrase(s) fausse(s) d'après ton dernier résultat. Une phrase réussie sort de la liste.`, `${n} sentence(s) marked wrong in your latest result. A sentence you get right leaves the list.`)}</p>
+    <div class="card">${shown.map(x => `<div class="setrow"><div><span class="t">${esc(skillName(x))}</span><div class="d">${L(`${x.wrong.length} phrase(s) à refaire`, `${x.wrong.length} sentence(s) to redo`)}</div></div>
+      ${key ? '' : `<button class="btn ghost sm" data-act="redoStart" data-skill="${esc(x.key)}">${L('Refaire celles-ci', 'Redo these')}</button>`}</div>`).join('')}</div>
+    <p style="margin-top:1rem"><button class="btn gold" data-act="redoStart" data-skill="${esc(key)}">${key ? L(`Refaire ces ${n} phrases`, `Redo these ${n} sentences`) : L(`Tout refaire (${n})`, `Redo everything (${n})`)}</button>
+    ${key ? ` <a class="btn ghost" href="#/redo">${L('Voir toutes', 'See all')}</a>` : ''}</p>`
+    : `<div class="card"><p class="muted">${sk.stats.length ? L("Bravo, aucune phrase fausse pour l'instant.", 'Well done, no wrong sentences for now.') : L("Rien à retravailler pour l'instant. Fais un exercice et enregistre-le.", 'Nothing to redo yet. Complete an exercise and save it.')}</p></div>`}`, 'redo');
+  void idx;
+}
+
+function viewRedoRun() {
+  setApp(`<p class="crumbs"><a href="#/redo">${L('À retravailler', 'To redo')}</a> / ${L('Reprise', 'Retry')}</p>
+    <h1>${L('Je refais mes phrases fausses', 'Redoing my wrong sentences')}</h1>
+    <div class="runhead" id="runhead"><div class="row"><span data-role="prog"></span><span data-role="score"></span></div>
+      <div class="bar" style="margin-top:.4rem"><i style="width:0"></i></div></div>
+    <div id="items">${run.set.items.map((it, i) => itemHTML(it, i, run, false)).join('')}</div>
+    <div class="finish"><button class="btn gold" data-act="finish" id="finishBtn">${L('Terminer et enregistrer', 'Finish and save')}</button>
+      <span class="small muted" id="finishNote"></span></div>
+    <p class="small muted">${L("Les phrases réussies sortent de ta liste. Cette reprise ne change pas les scores de tes exercices.", 'Sentences you get right leave your list. This retry does not change your exercise scores.')}</p>`, 'redo');
+  updateRunHead();
+  document.querySelectorAll('.gap').forEach(g => { g.style.width = Math.max(10, g.value.length + 2) + 'ch'; });
 }
 
 /* ---------- carnet de corrections ---------- */
@@ -595,6 +725,8 @@ async function render() {
     if (parts[0] === 'ex') return await viewExercise(parts[1]);
     if (parts[0] === 'attempt') return await viewAttempt(parts[1]);
     if (parts[0] === 'history') return await viewHistory();
+    if (parts[0] === 'skills') return await viewSkills();
+    if (parts[0] === 'redo') return await viewRedo(parts[1]);
     if (parts[0] === 'notes') return await viewNotes(parts[1]);
     return viewNotFound();
   } catch (e) {
@@ -624,7 +756,14 @@ app.addEventListener('click', async e => {
     run.res[item.id] = { ok: t.dataset.v === 'done' ? null : t.dataset.v === '1', self: true };
     saveDraft(); rerenderItem(item);
   }
+  else if (act === 'mark' && item && run.res[item.id]) {
+    const r = run.res[item.id];
+    r.ok = t.dataset.v === '1';
+    if (r.auto !== undefined) r.adj = r.ok !== r.auto; else r.self = true;
+    saveDraft(); rerenderItem(item);
+  }
   else if (act === 'finish') finishRun();
+  else if (act === 'redoStart') startRedo(t.dataset.skill || '');
   else if (act === 'retry') { run = null; clearDraft(t.dataset.set); }
   else if (act === 'tonotes') { t.disabled = true; t.textContent = L('Création de la note…', 'Creating the note…'); await attemptToNotes(t.dataset.attempt); }
   else if (act === 'newnote') {

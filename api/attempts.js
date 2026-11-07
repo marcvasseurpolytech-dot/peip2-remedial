@@ -13,7 +13,7 @@ function cleanItems(items) {
     let given = it.given == null ? null : it.given;
     if (Array.isArray(given)) given = given.slice(0, 10).map(x => String(x == null ? '' : x).slice(0, 400));
     else if (given !== null) given = String(given).slice(0, 4000);
-    out.push({ id: it.id, given, ok: it.ok === true ? true : it.ok === false ? false : null, done: !!it.done });
+    out.push({ id: it.id, given, ok: it.ok === true ? true : it.ok === false ? false : null, done: !!it.done, ...(it.adj === true ? { adj: true } : {}) });
   }
   return out;
 }
@@ -40,7 +40,7 @@ module.exports = handler(async (req, res, token) => {
     }
     const acc = await ghGet('access.json', token);
     if (!lessonOfSet(b.set_id) || !isSetOpen(acc, b.set_id)) return res.status(403).json({ error: 'Cette leçon est fermée.' });
-    const attempt = { id: rnd(), set_id: b.set_id, score, total, items, created_at: new Date().toISOString() };
+    const attempt = { id: rnd(), set_id: b.set_id, ...(b.kind === 'redo' ? { kind: 'redo' } : {}), score, total, items, created_at: new Date().toISOString() };
     await update(file, token, { nom, attempts: [] }, cur => {
       cur.nom = nom;
       cur.attempts.push(attempt);

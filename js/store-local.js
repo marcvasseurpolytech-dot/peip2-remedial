@@ -32,9 +32,9 @@ export function createLocalStore() {
     async access() { return { open: new Proxy({}, { get: () => true, has: () => true }), sets: {} }; },
     async listAttempts() { const d = read(); return d.attempts.filter(a => a.user_id === d.session).sort((a, b) => b.created_at.localeCompare(a.created_at)); },
     async getAttempt(id) { const d = read(); return d.attempts.find(a => a.id === id && a.user_id === d.session) || null; },
-    async addAttempt({ set_id, score, total, items }) {
+    async addAttempt({ set_id, score, total, items, kind }) {
       const d = read();
-      const a = { id: uid(), user_id: d.session, set_id, score, total, items, created_at: new Date().toISOString() };
+      const a = { id: uid(), user_id: d.session, set_id, ...(kind === 'redo' ? { kind } : {}), score, total, items, created_at: new Date().toISOString() };
       d.attempts.push(a); write(d); return a;
     },
     async listNotes() { const d = read(); return d.notes.filter(n => n.user_id === d.session).sort((a, b) => b.updated_at.localeCompare(a.updated_at)); },
