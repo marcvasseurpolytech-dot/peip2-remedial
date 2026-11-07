@@ -128,3 +128,5 @@ ul.clean{margin:.3rem 0 .6rem;padding-left:1.2rem}
   .top .in{gap:.6rem}
   th:nth-child(4),td:nth-child(4){display:none}
 }
+
+.item .quote u.ul{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;font-weight:600}

@@ -195,9 +195,17 @@ async function viewChapter(id) {
 }
 
 /* ---------- affichage d'un exercice ---------- */
+// Phrase avec le groupe de mots à interroger souligné (champ u).
+function underlined(it) {
+  const s = it.s, u = it.u;
+  const i = u ? s.indexOf(u) : -1;
+  if (i < 0) return esc(s);
+  return esc(s.slice(0, i)) + '<u class="ul">' + esc(u) + '</u>' + esc(s.slice(i + u.length));
+}
 function plain(it) {
   if (it.t === 'free' || it.t === 'essay') return (it.instr ? it.instr + ' ' : '') + it.s;
-  return (it.instr && !it.fix ? it.instr + ' ' : '') + it.s.replace(/\n/g, ' ');
+  const sent = it.u && it.s.includes(it.u) ? it.s.replace(it.u, '[' + it.u + ']') : it.s;
+  return (it.instr && !it.fix ? it.instr + ' ' : '') + sent.replace(/\n/g, ' ');
 }
 function givenText(it, g) {
   if (g == null) return '';
@@ -267,7 +275,7 @@ function itemHTML(rawIt, idx, st, review) {
   const hintShown = st.hints && st.hints[it.id];
   if (it.t === 'cloze') body = clozeHTML(it, given, disabled, checked ? gradeItem(it, given || []).gaps : null);
   else if (it.t === 'choice') body = choiceHTML(it, given, disabled);
-  else if (it.t === 'text') body = `<div class="quote">${esc(it.s)}</div><input class="t wide" data-item="${esc(it.id)}" value="${esc(given || '')}" ${disabled ? 'disabled' : ''} placeholder="${it.fix ? L('Ta phrase corrigée, ou Correct', 'Your corrected sentence, or Correct') : L('Ta réponse', 'Your answer')}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="font-family:var(--mono)">`;
+  else if (it.t === 'text') body = `<div class="quote">${underlined(it)}</div><input class="t wide" data-item="${esc(it.id)}" value="${esc(given || '')}" ${disabled ? 'disabled' : ''} placeholder="${it.fix ? L('Ta phrase corrigée, ou Correct', 'Your corrected sentence, or Correct') : L('Ta réponse', 'Your answer')}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="font-family:var(--mono)">`;
   else body = `${it.s ? `<div class="quote">${esc(it.s)}</div>` : ''}
     <textarea class="t ans" data-item="${esc(it.id)}" ${disabled ? 'disabled' : ''} placeholder="${L('Écris ta réponse ici', 'Write your answer here')}">${esc(given || '')}</textarea>`;
 

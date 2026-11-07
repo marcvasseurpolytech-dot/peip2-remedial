@@ -44,7 +44,7 @@ with sync_playwright() as p:
     body=page.inner_text('main'); print('CHAPTER EN:', body.replace('\n',' | ')[:300])
     assert 'Present Simple and Present Continuous' in body and 'Worksheet' in body and 'Murphy supplement' in body and 'Guided set A' in body
     page.click('summary'); rc=page.inner_text('.recap'); assert 'Time markers' in rc and 'Affirmative' in rc and 'Stative verbs' in rc
-    page.goto(BASE+'#/ex/g01-guidee-a'); page.wait_for_selector('.item')
+    page.goto(BASE+'#/ex/g01-guidee-a'); page.wait_for_selector('.item'); page.wait_for_timeout(500)
     page.click('.item:nth-of-type(1) [data-act=tonote]'); page.wait_for_selector('text=Added to your notes', timeout=8000)
     page.click('[data-act=hint]'); print('HINT EN:', page.inner_text('.hintline'))
     page.fill('.item:nth-of-type(1) .gap','drinks'); page.click('.item:nth-of-type(1) [data-act=check]')
@@ -56,12 +56,12 @@ with sync_playwright() as p:
     # exercice avec annotation anglaise et traduction
     page.goto(BASE+'#/ex/g01-guidee-b'); page.wait_for_selector('.item'); page.wait_for_timeout(500)
     assert '(thinking in progress)' in page.inner_text('.item:nth-of-type(2)') and 'réflexion' not in page.inner_text('main')
-    page.goto(BASE+'#/ex/g01-niv-c'); page.wait_for_selector('.item')
+    page.goto(BASE+'#/ex/g01-niv-c'); page.wait_for_selector('.item'); page.wait_for_timeout(500)
     t=page.inner_text('main'); assert 'Correct the sentence. Write the whole sentence' in t and 'Translate into English.' in t
     page.fill('.item:nth-of-type(1) input.wide','She knows the answer.'); page.click('.item:nth-of-type(1) [data-act=check]')
     assert 'Correct' in page.inner_text('.item:nth-of-type(1) .fb')
     page.click('.item:nth-of-type(6) [data-act=reveal]'); print('MODEL EN:', page.inner_text('.item:nth-of-type(6) .fb').replace('\n',' | '))
-    page.goto(BASE+'#/ex/g01-bonus'); page.wait_for_selector('.item')
+    page.goto(BASE+'#/ex/g01-bonus'); page.wait_for_selector('.item'); page.wait_for_timeout(500)
     page.click('.item:nth-of-type(1) [data-act=reveal]'); fbb=page.inner_text('.item:nth-of-type(1) .fb'); assert 'standard grammar' in fbb, fbb
     page.click('.item:nth-of-type(1) [data-act=self][data-v="1"]')
     page.click('[data-act=finish]'); page.click('[data-act=finish]'); page.wait_for_selector('.score')

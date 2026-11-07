@@ -4,8 +4,9 @@ import { G02 } from './g02.js';
 import { G03 } from './g03.js';
 import { G04 } from './g04.js';
 import { G05 } from './g05.js';
+import { G22 } from './g22.js';
 
-export const CHAPTERS = [G01, G02, G03, G04, G05];
+export const CHAPTERS = [G01, G02, G03, G04, G05, G22];
 
 // Textes anglais par chapitre (même ordre d'items que le chapitre français).
 const EN = { G01: G01_EN };
