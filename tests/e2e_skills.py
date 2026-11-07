@@ -90,9 +90,9 @@ with sync_playwright() as p:
     ap.screenshot(path='/tmp/skills_admin.png')
     # onglet Content : toutes les séries, filtre par compétence, recherche, corrigé visible
     ap.click('[data-tab=content]'); ap.wait_for_selector('#clist details'); ap.wait_for_timeout(300)
-    assert ap.locator('#clist details.cset').count()==181, ap.locator('#clist details.cset').count()
-    assert ap.locator('#clist details.cch').count()==13 and ap.locator('#clist details[open]').count()==0, 'chapters must be collapsed by default'
-    assert '1555 sentence(s)' in ap.inner_text('#clist'), ap.inner_text('#clist')[:120]
+    assert ap.locator('#clist details.cset').count()==333, ap.locator('#clist details.cset').count()
+    assert ap.locator('#clist details.cch').count()==25 and ap.locator('#clist details[open]').count()==0, 'chapters must be collapsed by default'
+    assert '2696 sentence(s)' in ap.inner_text('#clist'), ap.inner_text('#clist')[:120]
     ap.select_option('[data-cf=chapter]','G22'); ap.wait_for_timeout(200); assert '100 sentence(s) in 10' in ap.inner_text('#clist')
     ap.select_option('[data-cf=skill]','questions-how-many-how-much'); ap.wait_for_timeout(200)
     t=ap.inner_text('#clist'); assert 'How many' in t and 'Questions: how many / how much' in t, t[:300]

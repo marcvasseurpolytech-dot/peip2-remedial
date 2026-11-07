@@ -60,3 +60,8 @@ export function ex(list, opts = {}) {
 export const cl = list => ex(list, { noThat: true }).flatMap(x => [x, 'that ' + x]);
 // who(['me','us'], 'She told {} not to ...') remplace {} par chaque personne.
 export const who = (people, tpl) => people.map(p => tpl.replace('{}', p));
+
+// Raccourcis communs aux chapitres G07 et suivants.
+export const hint = (fr, en) => [fr, en];
+export const K = (s, a, fr, why, whyEn, h) => C(s, a, fr, why, whyEn, h ? h[0] : null, h ? h[1] : null);
+export const SK = (fr, en) => [fr, en];
