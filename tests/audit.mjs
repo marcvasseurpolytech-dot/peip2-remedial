@@ -11,7 +11,7 @@ for (const set of SETS) {
     const prompt = (it.t === 'free' || it.t === 'essay') ? it.s : it.t === 'text' ? it.s : it.s;
     console.log(it.id + '  [' + it.t + '] ' + exp + '   ||FR: ' + (it.fr || (it.m ? it.m[0].slice(0,80) : '')));
     // unicité des phrases anglaises
-    const key = norm(it.ok ? it.s : exp);
+    const key = norm(it.ok ? it.s : it.u ? it.s + ' ' + exp : exp);
     if (key && seen.has(key)) { console.log('  !! DOUBLON avec ' + seen.get(key)); err++; }
     seen.set(key, it.id);
     // auto-test : la réponse attendue doit être acceptée

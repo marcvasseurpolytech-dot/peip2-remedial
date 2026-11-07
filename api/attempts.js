@@ -1,7 +1,7 @@
 const { ghGet, update, slug, studentFrom, handler, body } = require('./_lib');
 
-// g01-niv-a -> G01 : une leçon fermée n'accepte plus de nouvelles tentatives.
-const lessonOf = setId => { const m = /^g(\d{2})-/.exec(String(setId || '')); return m ? 'G' + m[1] : null; };
+// g01-niv-a -> G01, wh-03 -> WH : une leçon fermée n'accepte plus de nouvelles tentatives.
+const lessonOf = setId => { const m = /^(g\d{2}|wh)-/.exec(String(setId || '')); return m ? m[1].toUpperCase() : null; };
 
 const MAX_PER_STUDENT = 2000;
 const rnd = () => require('crypto').randomUUID();

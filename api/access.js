@@ -1,7 +1,7 @@
 const { ghGet, update, handler, body, isAdmin } = require('./_lib');
 
 const FILE = 'access.json';
-const ID = /^G\d{2}$/;
+const ID = /^(G\d{2}|WH)$/;
 
 // Leçons ouvertes : { lessons: { G01: true, ... } }. Une leçon absente du fichier est FERMÉE.
 module.exports = handler(async (req, res, token) => {

@@ -55,4 +55,17 @@ with sync_playwright() as p:
     # exercice entier : terminer et enregistrer
     page.goto(BASE+'#/ex/g22-f01'); page.wait_for_selector('.item'); page.wait_for_timeout(500)
     page.click('[data-act=finish]') if page.locator('[data-act=finish]').count() else None
+    # chapitre WH : fermé tant que l'enseignant ne l'ouvre pas, puis ouvert
+    r=post('api/attempts',{'set_id':'wh-01','items':[{'id':'wh-01.1','given':None,'ok':True,'done':True}],'score':1,'total':1},stok); assert r.get('error')=='Cette leçon est fermée.', r
+    assert post('api/access',{'lesson':'WH','open':True},tok).get('open',{}).get('WH')==True
+    r=post('api/attempts',{'set_id':'wh-01','items':[{'id':'wh-01.1','given':'x','ok':True,'done':True}],'score':1,'total':1},stok); assert 'error' not in r, r
+    page.goto(BASE+'#/chapter/WH'); page.wait_for_selector('.setrow'); assert page.inner_text('main').count('Exercise ')>=10
+    page.goto(BASE+'#/ex/wh-10'); page.wait_for_selector('.item'); page.wait_for_timeout(500)
+    assert page.locator('.item').count()==20 and page.locator('u.ul').count()==20
+    page.fill('.item:nth-of-type(2) input.wide','how long will they be testing the system on friday'); page.click('.item:nth-of-type(2) [data-act=check]')
+    assert 'ok' in page.get_attribute('.item:nth-of-type(2)','class')
+    page.fill('.item:nth-of-type(8) input.wide','For how long will he have worked for the company by then?'); page.click('.item:nth-of-type(8) [data-act=check]')
+    assert 'ok' in page.get_attribute('.item:nth-of-type(8)','class')
+    page.fill('.item:nth-of-type(13) input.wide','Where did they meet the director in?'); page.click('.item:nth-of-type(13) [data-act=check]')
+    assert 'ko' in page.get_attribute('.item:nth-of-type(13)','class')
     print('G22 E2E OK' if not errors else ('ERRORS: '+str(errors)))
