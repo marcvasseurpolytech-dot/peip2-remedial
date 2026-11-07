@@ -1,6 +1,7 @@
 import { CHAPTERS, SETS, findSet } from '../data/index.js';
 import { msgTextEn } from './i18n.js';
 import { itemIndex } from './skills.js';
+import { expectedText } from './check.js';
 
 const app = document.getElementById('app');
 const KEY = 'peip2.admin.v1';
@@ -30,7 +31,7 @@ async function api(path, { method = 'GET', body } = {}) {
 function frame(inner) {
   const logged = !!session();
   app.innerHTML = `<header class="top"><div class="in"><a class="brand" href="admin.html">Administration<small>PEIP2 English · Polytech Lille</small></a>
-    ${logged ? `<nav><a href="#" data-tab="students" class="${tab === 'students' ? 'on' : ''}">Students</a><a href="#" data-tab="lessons" class="${tab === 'lessons' ? 'on' : ''}">Lessons</a><a href="#" data-tab="results" class="${tab === 'results' ? 'on' : ''}">Results</a><a href="#" data-tab="skills" class="${tab === 'skills' ? 'on' : ''}">Skills</a><a href="./">Student site</a></nav>
+    ${logged ? `<nav><a href="#" data-tab="students" class="${tab === 'students' ? 'on' : ''}">Students</a><a href="#" data-tab="lessons" class="${tab === 'lessons' ? 'on' : ''}">Lessons</a><a href="#" data-tab="results" class="${tab === 'results' ? 'on' : ''}">Results</a><a href="#" data-tab="skills" class="${tab === 'skills' ? 'on' : ''}">Skills</a><a href="#" data-tab="content" class="${tab === 'content' ? 'on' : ''}">Content</a><a href="./">Student site</a></nav>
     <div class="who"><button class="link" data-act="logout" style="color:#e4c77d">Sign out</button></div>` : ''}</div></header>
     <main>${inner}</main>
     <footer><b>MARC VASSEUR | POLYTECH LILLE</b><br>Marc Vasseur · marc.vasseur@polytech-lille.fr</footer>`;
@@ -169,7 +170,7 @@ async function viewSkills() {
     for (const [id, v] of Object.entries(r.items || {})) {
       const e = idx.get(id);
       if (!e) continue;
-      const sk = acc.get(e.skill.key) || { en: e.skill.en, cells: {} };
+      const sk = acc.get(e.skill.key) || { key: e.skill.key, en: e.skill.en, cells: {} };
       for (const c of ['All', r.dept]) {
         const cell = sk.cells[c] || (sk.cells[c] = { ok: 0, n: 0, st: new Set() });
         cell.ok += v; cell.n++; cell.st.add(r.nom);
@@ -183,7 +184,73 @@ async function viewSkills() {
   frame(`<h1>Skills</h1>
     <p class="small muted">Share of sentences marked right (latest result of each sentence, students' own points included), by skill and class. The small number is how many students have data. Weakest skills first.</p>
     <div class="card" style="overflow-x:auto"><table><thead><tr><th>Skill</th>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
-    <tbody>${list.map(s => `<tr><td>${esc(s.en)}</td>${cols.map(c => `<td>${cell(s.cells[c])}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${cols.length + 1}" class="muted">No data yet.</td></tr>`}</tbody></table></div>`);
+    <tbody>${list.map(s => `<tr><td><a href="#" data-skill="${esc(s.key)}">${esc(s.en)}</a></td>${cols.map(c => `<td>${cell(s.cells[c])}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${cols.length + 1}" class="muted">No data yet.</td></tr>`}</tbody></table></div>`);
+}
+
+// Contenu : toutes les phrases avec leur corrigé, leur explication et leur compétence.
+const cf = { chapter: '', skill: '', q: '' };
+const enOf = o => (o && o.en ? Object.assign({}, o, o.en) : o);
+function answerHTML(it) {
+  const m = s => `<span class="mono">${esc(s)}</span>`;
+  if (it.t === 'cloze') {
+    const alts = it.a.map(x => x.slice(1)).filter(x => x.length).map(x => x.join(' or '));
+    return `<div>${m(expectedText(it))}</div>${alts.length ? `<div class="small muted">Also accepted: ${alts.map(m).join(' ; ')}</div>` : ''}`;
+  }
+  if (it.t === 'choice') return `<div>${it.o.map((o, i) => (i === it.c ? `<b>${esc(o)} ✓</b>` : `<span class="muted">${esc(o)}</span>`)).join(' / ')}</div>`;
+  if (it.t === 'text') {
+    if (it.ok) return `<div>${m('Correct (the sentence has no error)')}</div>`;
+    return `<div>${m(it.a[0])}</div>${it.a.length > 1 ? `<div class="small muted">Also accepted: ${it.a.slice(1).map(m).join(' | ')}</div>` : ''}`;
+  }
+  const mm = it.m || [];
+  return `<div>${m(mm[0] || '')}</div>${mm.slice(1).map(x => `<div class="small muted">Other version: ${m(x)}</div>`).join('')}<div class="small muted">${it.t === 'essay' ? 'Example (not scored)' : 'Model (self-assessed)'}</div>`;
+}
+function sentenceHTML(it) {
+  let sent = esc(it.s).replace(/\n/g, '<br>');
+  if (it.u && it.s.includes(it.u)) { const i = it.s.indexOf(it.u); sent = esc(it.s.slice(0, i)) + '<u style="text-decoration-thickness:2px;font-weight:600">' + esc(it.u) + '</u>' + esc(it.s.slice(i + it.u.length)); }
+  return `${it.instr && !it.fix ? `<div class="small muted">${esc(it.instr)}</div>` : ''}<div>${sent}</div>`;
+}
+function contentRows() {
+  const q = cf.q.trim().toLowerCase();
+  const idx = itemIndex();
+  const out = [];
+  for (const ch of CHAPTERS) {
+    if (cf.chapter && ch.id !== cf.chapter) continue;
+    for (const set of ch.sets) {
+      const rows = set.items.map((raw, i) => ({ raw, i, sk: idx.get(raw.id).skill })).filter(r => {
+        if (cf.skill && r.sk.key !== cf.skill) return false;
+        if (!q) return true;
+        const it = enOf(r.raw);
+        return [it.s, it.instr, it.why, it.hint, expectedText(it), (it.m || []).join(' '), (it.a || []).join(' ')].join(' ').toLowerCase().includes(q);
+      });
+      if (rows.length) out.push({ ch, set: enOf(set), rows });
+    }
+  }
+  return out;
+}
+function paintContentList() {
+  const groups = contentRows();
+  const n = groups.reduce((t, g) => t + g.rows.length, 0);
+  const filtered = !!(cf.skill || cf.q.trim());
+  document.getElementById('clist').innerHTML = `<p class="small muted">${n} sentence(s) in ${groups.length} exercise set(s).</p>` + (groups.map(g => `
+    <details class="card" style="margin-bottom:.7rem" ${filtered || cf.chapter && groups.length === 1 ? 'open' : ''}><summary>${esc(g.ch.id)} · ${esc(g.set.title)} <span class="badge">${esc(g.set.level)}</span> <span class="small muted">${g.rows.length} sentence(s)</span></summary>
+      <div style="overflow-x:auto"><table style="margin-top:.6rem"><thead><tr><th>#</th><th>Sentence</th><th>Corrigé</th><th>Explanation</th><th>Skill</th></tr></thead><tbody>
+      ${g.rows.map(r => { const it = enOf(r.raw); return `<tr><td class="small muted">${r.i + 1}</td><td>${sentenceHTML(it)}</td><td>${answerHTML(it)}</td>
+        <td class="small">${esc(it.why || '')}${it.hint ? `<div class="muted">Hint: ${esc(it.hint)}</div>` : ''}</td><td class="small"><a href="#" data-skill="${esc(r.sk.key)}">${esc(r.sk.en)}</a></td></tr>`; }).join('')}
+      </tbody></table></div></details>`).join('') || '<p class="muted">Nothing matches.</p>');
+}
+function viewContent() {
+  const idx = itemIndex();
+  const skills = new Map();
+  for (const e of idx.values()) skills.set(e.skill.key, e.skill.en);
+  frame(`<h1>Content</h1>
+    <p class="small muted">Every sentence the students work on, with its corrigé, the explanation they see and the skill it counts for.</p>
+    <div class="card" style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem">
+      <select class="t" style="width:auto" data-cf="chapter"><option value="">All chapters</option>${CHAPTERS.map(c => `<option value="${esc(c.id)}" ${cf.chapter === c.id ? 'selected' : ''}>${esc(c.id)} · ${esc(enOf(c).title)}</option>`).join('')}</select>
+      <select class="t" style="width:auto" data-cf="skill"><option value="">All skills</option>${[...skills].sort((a, b) => a[1].localeCompare(b[1])).map(([k, v]) => `<option value="${esc(k)}" ${cf.skill === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>
+      <input class="t" style="width:16rem" data-cf="q" placeholder="Search a word or phrase" value="${esc(cf.q)}">
+      <button class="btn ghost sm" data-act="cfreset">Reset</button></div>
+    <div id="clist"></div>`);
+  paintContentList();
 }
 
 async function show() {
@@ -192,6 +259,7 @@ async function show() {
     if (tab === 'lessons') return await viewLessons();
     if (tab === 'results') return await viewResults();
     if (tab === 'skills') return await viewSkills();
+    if (tab === 'content') return viewContent();
     await load(); viewStudents();
   } catch (e) { if (!session()) { msg = e.message; viewLogin(); } else { frame(`<div class="msg err">${esc(e.message)}</div>`); } }
 }
@@ -207,6 +275,9 @@ async function act(name, nom, extra = {}) {
 }
 
 app.addEventListener('click', async e => {
+  const skEl = e.target.closest('[data-skill]');
+  if (skEl) { e.preventDefault(); cf.skill = skEl.dataset.skill; cf.chapter = ''; cf.q = ''; tab = 'content'; return show(); }
+  if (e.target.closest('[data-act=cfreset]')) { cf.chapter = cf.skill = cf.q = ''; return viewContent(); }
   const tabEl = e.target.closest('[data-tab]');
   if (tabEl) { e.preventDefault(); tab = tabEl.dataset.tab; msg = ''; return show(); }
   const sortEl = e.target.closest('[data-sort]');
@@ -246,8 +317,14 @@ app.addEventListener('click', async e => {
 // mémorise les chapitres déployés pour qu'ils le restent après chaque action
 app.addEventListener('toggle', e => { const d = e.target; if (d.dataset && d.dataset.exp) { if (d.open) expanded.add(d.dataset.exp); else expanded.delete(d.dataset.exp); } }, true);
 
+app.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.cf === 'q') { cf.q = t.value; paintContentList(); }
+});
+
 app.addEventListener('change', e => {
   const t = e.target;
+  if (t.dataset && (t.dataset.cf === 'chapter' || t.dataset.cf === 'skill')) { cf[t.dataset.cf] = t.value; paintContentList(); return; }
   if (t.dataset.act === 'dept') act('setDept', t.closest('tr').dataset.nom, { dept: t.value });
 });
 

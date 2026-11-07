@@ -88,6 +88,20 @@ with sync_playwright() as p:
     ap.click('[data-tab=skills]'); ap.wait_for_selector('table th:has-text("PEIP2 G2")'); ap.wait_for_timeout(500)
     at_=ap.inner_text('main'); print('ADMIN:', at_.replace('\n',' | ')[:400]); assert 'Questions: what' in at_ and 'PEIP2 G2' in at_
     ap.screenshot(path='/tmp/skills_admin.png')
+    # onglet Content : toutes les séries, filtre par compétence, recherche, corrigé visible
+    ap.click('[data-tab=content]'); ap.wait_for_selector('#clist details'); ap.wait_for_timeout(300)
+    assert ap.locator('#clist details').count()==97, ap.locator('#clist details').count()
+    assert '893 sentence(s)' in ap.inner_text('#clist'), ap.inner_text('#clist')[:120]
+    ap.select_option('[data-cf=chapter]','G22'); ap.wait_for_timeout(200); assert '100 sentence(s) in 10' in ap.inner_text('#clist')
+    ap.select_option('[data-cf=skill]','questions-how-many-how-much'); ap.wait_for_timeout(200)
+    t=ap.inner_text('#clist'); assert 'How many' in t and 'Questions: how many / how much' in t, t[:300]
+    ap.fill('[data-cf=q]','chatbot'); ap.wait_for_timeout(200); t=ap.inner_text('#clist'); print('CONTENT:', t.replace('\n',' | ')[:200])
+    ap.click('[data-act=cfreset]'); ap.wait_for_selector('#clist details'); ap.fill('[data-cf=q]','chatbot'); ap.wait_for_timeout(200)
+    t=ap.inner_text('#clist'); assert 'In which year did the company release its first chatbot?' in t, t[:400]
+    ap.screenshot(path='/tmp/content_admin.png')
+    # depuis Skills : clic sur une compétence ouvre Content filtré
+    ap.click('[data-tab=skills]'); ap.wait_for_selector('table th:has-text("PEIP2 G2")'); ap.click('a[data-skill] >> nth=0'); ap.wait_for_selector('#clist details'); ap.wait_for_timeout(200)
+    assert ap.input_value('[data-cf=skill]')!='', 'skill filter not applied'
     page.goto(BASE+'#/skills'); page.wait_for_selector('table'); page.wait_for_timeout(400); page.screenshot(path='/tmp/skills_student.png')
 assert not errors, errors
 print('SKILLS E2E OK')
