@@ -1,0 +1,21 @@
+import crypto from 'crypto';
+const B = 'http://localhost:8765';
+const h = s => crypto.createHash('sha256').update(s).digest('hex');
+const post = (p, b, tok) => fetch(B + p, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(tok ? { Authorization: 'Bearer ' + tok } : {}) }, body: JSON.stringify(b) }).then(async r => ({ s: r.status, j: await r.json() }));
+await post('/api/auth', { action: 'signup', nom: 'Conc', prenom: 'Zoe', dept: 'PEIP2 G1', codeHash: h('5555') });
+const adm = (await post('/api/admin?resource=login', { password: 'admin-test' })).j.token;
+await post('/api/admin?resource=students', { action: 'approve', nom: 'CONC' }, adm);
+const tok = (await post('/api/auth', { action: 'login', nom: 'CONC', codeHash: h('5555') })).j.token;
+const N = 8;
+const items = [{ id: 'g01-a.1', given: ['x'], ok: true, done: true }];
+const r = await Promise.all(Array.from({ length: N }, () => post('/api/attempts', { set_id: 'g01-guidee-a', score: 1, total: 1, items }, tok)));
+const codes = r.map(x => x.s);
+const list = await fetch(B + '/api/attempts', { headers: { Authorization: 'Bearer ' + tok } }).then(x => x.json());
+console.log('statuts', codes.join(','), '| tentatives enregistrées', list.attempts.length, '/', N);
+const ok = list.attempts.length === codes.filter(c => c === 200).length;
+// données invalides et jeton falsifié
+console.log('invalide ->', (await post('/api/attempts', { set_id: 'BAD ID!', score: 5, total: 1, items }, tok)).s);
+console.log('sans jeton ->', (await post('/api/attempts', { set_id: 'a', score: 1, total: 1, items })).s);
+console.log('jeton falsifié ->', (await post('/api/attempts', { set_id: 'a', score: 1, total: 1, items }, tok.slice(0, -2) + 'aa')).s);
+console.log('admin sans jeton ->', (await fetch(B + '/api/admin?resource=students').then(x => x.status)));
+process.exit(ok ? 0 : 1);
