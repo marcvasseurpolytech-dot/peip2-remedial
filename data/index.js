@@ -4,10 +4,13 @@ import { G02 } from './g02.js';
 import { G03 } from './g03.js';
 import { G04 } from './g04.js';
 import { G05 } from './g05.js';
+import { G06 } from './g06.js';
+import { G07 } from './g07.js';
+import { G08 } from './g08.js';
 import { G22 } from './g22.js';
 import { WH } from './wh.js';
 
-export const CHAPTERS = [G01, G02, G03, G04, G05, G22, WH];
+export const CHAPTERS = [G01, G02, G03, G04, G05, G06, G07, G08, G22, WH];
 
 // Textes anglais par chapitre (même ordre d'items que le chapitre français).
 const EN = { G01: G01_EN };

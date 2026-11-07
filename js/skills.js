@@ -1,6 +1,6 @@
 // Compétences : chaque phrase est rattachée à un point de grammaire.
 // G22 / WH : le mot interrogatif attendu (who, what, how many...). G01 à G05 : le point de grammaire de la série.
-import { SETS, findSet } from '../data/index.js';
+import { SETS, CHAPTERS } from '../data/index.js';
 
 const T = (fr, en) => ({ fr, en });
 
@@ -69,7 +69,12 @@ for (const w of ['how long', 'how often', 'how far', 'how old', 'how fast', 'how
 export function skillOf(set, it) {
   let t;
   if (set.chapter === 'G22' || set.chapter === 'WH') t = WH_SKILL[whWord(it)] || WH_SKILL.other;
-  else t = SET_SKILL[set.id] || CH_MIXED[set.chapter] || T(set.chapter, set.chapter);
+  else {
+    const ch = CHAPTERS.find(x => x.id === set.chapter);
+    const sk = ch && ch.skills;
+    const pick = x => (x ? T(x[0], x[1]) : null);
+    t = SET_SKILL[set.id] || pick(sk && (sk[set.id] || sk['*'])) || CH_MIXED[set.chapter] || T(set.chapter, set.chapter);
+  }
   return { key: t.en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''), fr: t.fr, en: t.en };
 }
 
