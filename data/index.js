@@ -30,6 +30,11 @@ for (const ch of CHAPTERS) {
       const ei = en && en.items[set.id] && en.items[set.id][i];
       if (ei) it.en = ei;
       else if (it._en) { it.en = it._en; delete it._en; }
+      // consignes standard : version anglaise par défaut quand l'item n'en fournit pas
+      if (it.instr && !(it.en && it.en.instr)) {
+        const instr = it.fix ? 'Correct the sentence. Write the whole sentence, or write Correct if it is right.' : it.isTr ? 'Translate into English.' : null;
+        if (instr) it.en = Object.assign({}, it.en, { instr });
+      }
     });
   }
 }

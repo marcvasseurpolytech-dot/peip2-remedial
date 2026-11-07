@@ -90,8 +90,8 @@ with sync_playwright() as p:
     ap.screenshot(path='/tmp/skills_admin.png')
     # onglet Content : toutes les séries, filtre par compétence, recherche, corrigé visible
     ap.click('[data-tab=content]'); ap.wait_for_selector('#clist details'); ap.wait_for_timeout(300)
-    assert ap.locator('#clist details').count()==97, ap.locator('#clist details').count()
-    assert '893 sentence(s)' in ap.inner_text('#clist'), ap.inner_text('#clist')[:120]
+    assert ap.locator('#clist details').count()==100, ap.locator('#clist details').count()
+    assert '923 sentence(s)' in ap.inner_text('#clist'), ap.inner_text('#clist')[:120]
     ap.select_option('[data-cf=chapter]','G22'); ap.wait_for_timeout(200); assert '100 sentence(s) in 10' in ap.inner_text('#clist')
     ap.select_option('[data-cf=skill]','questions-how-many-how-much'); ap.wait_for_timeout(200)
     t=ap.inner_text('#clist'); assert 'How many' in t and 'Questions: how many / how much' in t, t[:300]
@@ -103,5 +103,11 @@ with sync_playwright() as p:
     ap.click('[data-tab=skills]'); ap.wait_for_selector('table th:has-text("PEIP2 G2")'); ap.click('a[data-skill] >> nth=0'); ap.wait_for_selector('#clist details'); ap.wait_for_timeout(200)
     assert ap.input_value('[data-cf=skill]')!='', 'skill filter not applied'
     page.goto(BASE+'#/skills'); page.wait_for_selector('table'); page.wait_for_timeout(400); page.screenshot(path='/tmp/skills_student.png')
+    # consignes anglaises par défaut (corrections et thème) et nouveaux exercices supplémentaires G05
+    call('api/access',{'lesson':'G05','open':True},tok)
+    page.goto(BASE+'#/ex/g05-x3'); page.wait_for_selector('.item'); page.wait_for_timeout(500)
+    t=page.inner_text('main'); assert 'Correct the sentence. Write the whole sentence' in t and 'Translate into English.' in t and 'Corrige' not in t and 'Traduis' not in t, t[:200]
+    page.goto(BASE+'#/chapter/G05'); page.wait_for_selector('.setrow'); page.wait_for_timeout(300)
+    t=page.inner_text('main'); assert 'Extra exercises' in t and 'Extra A: history and discoveries' in t and 'Extra C: active, passive and corrections' in t, t[:300]
 assert not errors, errors
 print('SKILLS E2E OK')

@@ -1,7 +1,7 @@
 // G05 : The Passive Voice (la voix passive)
 // Contenu reconstruit à partir de la fiche élève, du supplément Murphy et du devoir maison.
 // Le texte anglais (règles, indices, consignes) est écrit à côté du texte français avec E(...).
-import { E, c, tx, tr, op, es, FIX, set } from './dsl.js';
+import { E, c, tx, okc, tr, op, es, FIX, set } from './dsl.js';
 
 // Variante avec complément d'agent : by(phrase, 'the technician') accepte aussi « ... by the technician. »
 const BE = new Set(['is', 'are', 'was', 'were', 'be', 'been', 'being']);
@@ -258,6 +258,143 @@ const th = [
   tr('Vous devriez faire relire ce document par un collègue.', ['You should get this document checked by a colleague.', 'You should have this document checked by a colleague.', 'You should get this document proofread by a colleague.', 'You should have this document proofread by a colleague.'], 'should get / have + objet + participe passé, avec by + agent.', E('should get / have + object + past participle, with by + agent.'))
 ];
 
+
+/* ---------- Exercices supplémentaires (inédits) ---------- */
+// Supplément A : histoire et découvertes (actif vers passif, temps variés)
+const extraA = [
+  PA('Vincenzo Peruggia stole the Mona Lisa from the Louvre in 1911.',
+    ['The Mona Lisa was stolen from the Louvre in 1911 by Vincenzo Peruggia.', 'The Mona Lisa was stolen by Vincenzo Peruggia from the Louvre in 1911.', 'The Mona Lisa was stolen from the Louvre by Vincenzo Peruggia in 1911.'],
+    'Vincenzo Peruggia a volé la Joconde au Louvre en 1911.',
+    "Past Simple passif : was stolen. L'agent est un nom propre, donc on garde by Vincenzo Peruggia. steal est irrégulier : stole, stolen.",
+    'Passive past simple: was stolen. The agent is a proper name, so by Vincenzo Peruggia is kept. steal is irregular: stole, stolen.'),
+  PA("Howard Carter's team discovered Tutankhamun's tomb in 1922.",
+    by("Tutankhamun's tomb was discovered in 1922.", "Howard Carter's team"),
+    "L'équipe de Howard Carter a découvert la tombe de Toutânkhamon en 1922.",
+    "Past Simple passif : was discovered. Le by + agent est facultatif : on peut le garder pour dire qui a fait la découverte.",
+    'Passive past simple: was discovered. The by + agent phrase is optional: keep it to say who made the discovery.'),
+  PA('Archaeologists have uncovered a Roman bath house beneath a supermarket car park.',
+    by('A Roman bath house has been uncovered beneath a supermarket car park.', 'archaeologists'),
+    'Des archéologues ont mis au jour des thermes romains sous le parking d\'un supermarché.',
+    "Present Perfect passif : has been uncovered. Le sujet est a Roman bath house (singulier), donc has been. L'agent archaeologists est évident : on l'omet le plus souvent.",
+    'Passive present perfect: has been uncovered. The subject is a Roman bath house (singular), so has been. The agent archaeologists is obvious: it is usually left out.'),
+  PA("While restorers were cleaning the fresco, someone discovered a hidden signature.",
+    ['While the fresco was being cleaned, a hidden signature was discovered.', 'While the fresco was being cleaned by restorers, a hidden signature was discovered.',
+      'A hidden signature was discovered while the fresco was being cleaned.', 'A hidden signature was discovered while the fresco was being cleaned by restorers.'],
+    "Pendant que des restaurateurs nettoyaient la fresque, quelqu'un a découvert une signature cachée.",
+    "Deux verbes à passer au passif. Past Continuous passif : was being cleaned. Past Simple passif : was discovered. L'agent someone est omis.",
+    'Two verbs to put into the passive. Passive past continuous: was being cleaned. Passive past simple: was discovered. The agent someone is left out.'),
+  PA("By the time rescuers arrived, the storm had destroyed the village's only bridge.",
+    ["By the time rescuers arrived, the village's only bridge had been destroyed by the storm.", "The village's only bridge had been destroyed by the storm by the time rescuers arrived."],
+    "Quand les secours sont arrivés, la tempête avait détruit l'unique pont du village.",
+    "Past Perfect passif : had been destroyed. L'agent the storm est la cause : on garde by the storm. arrived est intransitif, il ne change pas.",
+    'Passive past perfect: had been destroyed. The agent the storm is the cause: by the storm is kept. arrived is intransitive, so it does not change.'),
+  PA('The jury will not announce the name of the winner until midnight.',
+    ['The name of the winner will not be announced until midnight.', 'The name of the winner will not be announced by the jury until midnight.', 'The name of the winner will not be announced until midnight by the jury.',
+      "The winner's name will not be announced until midnight.", "The winner's name will not be announced by the jury until midnight.", "The winner's name will not be announced until midnight by the jury."],
+    "Le jury n'annoncera pas le nom du gagnant avant minuit.",
+    'Futur passif négatif : will not be announced. La négation se place après will.',
+    'Passive future, negative: will not be announced. The negation goes after will.'),
+  PA('The council is going to demolish the old stadium and replace it with a park.',
+    ['The old stadium is going to be demolished and replaced with a park.', 'The old stadium is going to be demolished and replaced by a park.',
+      'The old stadium is going to be demolished and is going to be replaced with a park.', 'The old stadium is going to be demolished and is going to be replaced by a park.',
+      'The old stadium is going to be demolished by the council and replaced with a park.', 'The old stadium is going to be demolished by the council and replaced by a park.'],
+    "La municipalité va démolir le vieux stade et le remplacer par un parc.",
+    "going to + be + participe passé. Deux verbes partagent le même sujet : is going to be demolished and replaced. it (le stade) a déjà servi de sujet, on ne le répète pas.",
+    'going to + be + past participle. Two verbs share the same subject: is going to be demolished and replaced. it (the stadium) is already the subject, so it is not repeated.'),
+  PA("You mustn't photograph the paintings with a flash.",
+    ["The paintings mustn't be photographed with a flash.", 'The paintings must not be photographed with a flash.'],
+    "Il est interdit de photographier les tableaux avec un flash.",
+    "Modal passif : must not + be + participe passé. Le sujet général you disparaît.",
+    'Passive with a modal: must not + be + past participle. The general subject you disappears.'),
+  PA('The university awarded the young researcher a prestigious scholarship.',
+    [...by('The young researcher was awarded a prestigious scholarship.', 'the university'), ...by('A prestigious scholarship was awarded to the young researcher.', 'the university')],
+    "L'université a attribué une bourse prestigieuse au jeune chercheur.",
+    "award a deux compléments. Deux passifs sont possibles : The young researcher was awarded a prestigious scholarship, ou A prestigious scholarship was awarded to the young researcher.",
+    'award takes two objects. Two passives are possible: The young researcher was awarded a prestigious scholarship, or A prestigious scholarship was awarded to the young researcher.'),
+  PA('People expect the new law to reduce plastic waste significantly.',
+    ['The new law is expected to reduce plastic waste significantly.', 'The new law is expected to significantly reduce plastic waste.', 'It is expected that the new law will reduce plastic waste significantly.', 'It is expected that the new law will significantly reduce plastic waste.'],
+    "On s'attend à ce que la nouvelle loi réduise nettement les déchets plastiques.",
+    "Deux constructions : sujet + is expected to + infinitif, ou It is expected that + proposition (avec will pour le futur).",
+    'Two constructions: subject + is expected to + infinitive, or It is expected that + clause (with will for the future).')
+];
+
+// Supplément B : formes difficiles (compléter)
+const extraB = [
+  c('This cathedral ___ (restore) several times since the Middle Ages.', [['has been restored']], 'Cette cathédrale a été restaurée plusieurs fois depuis le Moyen Âge.',
+    "Present Perfect passif : has been + participe passé. since impose le Present Perfect.", 'since + une date de début',
+    E('Passive present perfect: has been + past participle. since requires the present perfect.', 'since + a starting point')),
+  c('The suspect ___ (question) when his lawyer finally arrived.', [['was being questioned']], "Le suspect était en train d'être interrogé quand son avocat est enfin arrivé.",
+    "Past Continuous passif : was / were being + participe passé. L'action était en cours quand l'autre s'est produite.", 'action en cours dans le passé',
+    E('Passive past continuous: was / were being + past participle. The action was in progress when the other one happened.', 'action in progress in the past')),
+  c('The vase is in pieces. It ___ (must / break) while we were out.', [['must have been broken']], "Le vase est en morceaux. Il a dû être cassé pendant notre absence.",
+    "Déduction sur le passé : must + have been + participe passé.", 'déduction certaine sur le passé',
+    E('Deduction about the past: must + have been + past participle.', 'certain deduction about the past')),
+  c('She hates ___ (tell) what to do.', [['being told', 'to be told']], "Elle déteste qu'on lui dise quoi faire.",
+    "Après hate, on peut employer la forme en -ing ou l'infinitif. Au passif : being + participe passé, ou to be + participe passé.", 'verbe + forme en -ing au passif',
+    E('After hate you can use the -ing form or the infinitive. In the passive: being + past participle, or to be + past participle.', '-ing form of the passive')),
+  c('The survivors expect ___ (rescue) before nightfall.', [['to be rescued']], "Les survivants s'attendent à être secourus avant la nuit.",
+    "expect + infinitif passif : to be + participe passé.", 'infinitif passif',
+    E('expect + passive infinitive: to be + past participle.', 'passive infinitive')),
+  c('Several tourists ___ (injure) when the cable car stopped suddenly, but nobody ___ (kill).', [['were injured', 'got injured'], ['was killed', 'got killed']], "Plusieurs touristes ont été blessés quand la télécabine s'est arrêtée brusquement, mais personne n'a été tué.",
+    "Past Simple passif : were injured, was killed (nobody est singulier). On peut aussi employer get à la place de be : got injured, got killed.", 'singulier ou pluriel ?',
+    E('Passive past simple: were injured, was killed (nobody is singular). You can also use get instead of be: got injured, got killed.', 'singular or plural?')),
+  c('When ___ the first modern Olympic Games ___ (hold)? In Athens, in 1896.', [['were'], ['held']], 'Quand les premiers Jeux olympiques modernes ont-ils eu lieu ? À Athènes, en 1896.',
+    "Question au Past Simple passif : was / were + sujet + participe passé. Games est pluriel : were. hold est irrégulier : held.", 'sujet pluriel, verbe irrégulier',
+    E('Question in the passive past simple: was / were + subject + past participle. Games is plural: were. hold is irregular: held.', 'plural subject, irregular verb')),
+  c('The old factory ___ (pull down) next year to make room for flats.', [['will be pulled down', 'is going to be pulled down', 'is to be pulled down']], "La vieille usine sera démolie l'an prochain pour faire place à des appartements.",
+    "Futur passif : will be + participe passé (ou is going to be). pull down est un verbe à particule : la particule down reste après le participe passé.", 'futur + verbe à particule',
+    E('Passive future: will be + past participle (or is going to be). pull down is a phrasal verb: the particle down stays after the past participle.', 'future + phrasal verb')),
+  c("The patient ___ (operate on) right now, so you can't see him.", [['is being operated on']], "Le patient est en train d'être opéré, donc vous ne pouvez pas le voir.",
+    "Present Continuous passif : is being + participe passé. operate on est suivi d'une préposition qui reste à la fin : is being operated on.", 'right now + préposition finale',
+    E('Passive present continuous: is being + past participle. operate on takes a preposition that stays at the end: is being operated on.', 'right now + final preposition')),
+  c('The thieves ___ (believe) to have escaped through the sewers.', [['are believed', 'were believed']], "On pense que les voleurs se sont échappés par les égouts.",
+    "Sujet + be believed to have + participe passé : l'évasion est antérieure à la croyance. Le présent (are believed) et le passé (were believed) sont possibles.", 'to have escaped = antérieur',
+    E('Subject + be believed to have + past participle: the escape came before the belief. The present (are believed) and the past (were believed) are both possible.', 'to have escaped = earlier')),
+];
+
+// Supplément C : actif, passif et corrections
+const extraC = [
+  AC('Pompeii was buried by the eruption of Vesuvius in AD 79.', ['The eruption of Vesuvius buried Pompeii in AD 79.', 'The eruption of Mount Vesuvius buried Pompeii in AD 79.'],
+    "Pompéi a été ensevelie par l'éruption du Vésuve en 79 après J.-C.",
+    "L'agent after by devient le sujet. was buried devient buried (Past Simple actif).",
+    'The agent after by becomes the subject. was buried becomes buried (active past simple).'),
+  AC('The first image of a black hole was released by the Event Horizon Telescope collaboration in 2019.', ['The Event Horizon Telescope collaboration released the first image of a black hole in 2019.'],
+    "La première image d'un trou noir a été publiée par la collaboration Event Horizon Telescope en 2019.",
+    "Le by + agent devient le sujet. was released devient released.",
+    'The by + agent becomes the subject. was released becomes released.'),
+  AC('Thousands of trees have been planted by volunteers along the river this year.', ['Volunteers have planted thousands of trees along the river this year.'],
+    "Des milliers d'arbres ont été plantés par des bénévoles le long de la rivière cette année.",
+    "volunteers devient le sujet. have been planted devient have planted (Present Perfect actif).",
+    'volunteers becomes the subject. have been planted becomes have planted (active present perfect).'),
+  AC('The error could have been avoided by a simple safety check.', ['A simple safety check could have avoided the error.'],
+    "L'erreur aurait pu être évitée par un simple contrôle de sécurité.",
+    "could have been avoided devient could have avoided. Le by + agent devient le sujet.",
+    'could have been avoided becomes could have avoided. The by + agent becomes the subject.'),
+  AC('The winners will be given a medal by the mayor.', ['The mayor will give the winners a medal.', 'The mayor will give a medal to the winners.'],
+    'Les gagnants recevront une médaille des mains du maire.',
+    "the mayor devient le sujet. will be given devient will give. Deux ordres sont possibles : give the winners a medal, give a medal to the winners.",
+    'the mayor becomes the subject. will be given becomes will give. Two orders are possible: give the winners a medal, give a medal to the winners.'),
+  tx(FIX, 'The accident was happened at six in the morning.', ['The accident happened at six in the morning.', 'The accident occurred at six in the morning.', 'The accident took place at six in the morning.'],
+    "L'accident s'est produit à six heures du matin.",
+    "happen est intransitif : il n'a pas de complément d'objet, donc pas de passif. On dit The accident happened.",
+    E('happen is intransitive: it has no object, so there is no passive. Say The accident happened.')),
+  tx(FIX, 'The new stadium is building by a Spanish company.', ['The new stadium is being built by a Spanish company.', 'The new stadium is being constructed by a Spanish company.'],
+    "Le nouveau stade est en construction par une entreprise espagnole.",
+    "Présent continu passif : is being + participe passé. build est irrégulier : built.",
+    E('Passive present continuous: is being + past participle. build is irregular: built.')),
+  tx(FIX, 'The bridge was designed from a famous Danish architect.', ['The bridge was designed by a famous Danish architect.'],
+    "Le pont a été conçu par un célèbre architecte danois.",
+    "L'agent du passif se construit avec by, pas avec from.",
+    E('The agent of the passive is introduced by by, not from.')),
+  okc(FIX, 'The suspect is said to have fled the country.', "Le suspect aurait fui le pays.",
+    "Phrase correcte : is said to have + participe passé exprime une action antérieure à l'opinion rapportée.",
+    E('The sentence is correct: is said to have + past participle expresses an action that came before the reported opinion.')),
+  tr("Le viaduc de Millau a été inauguré en 2004 et il est considéré comme l'un des ponts les plus hauts du monde.",
+    ['The Millau Viaduct was opened in 2004 and is considered one of the tallest bridges in the world.', 'The Millau Viaduct was inaugurated in 2004 and is considered one of the highest bridges in the world.', 'The Millau Viaduct was opened in 2004 and is regarded as one of the tallest bridges in the world.'],
+    "Deux passifs à la suite avec un seul sujet : was opened and is considered. On dit one of the tallest bridges in the world (superlatif + one of).",
+    E('Two passives in a row with one subject: was opened and is considered. Say one of the tallest bridges in the world (superlative + one of).'))
+];
+
 export const G05 = {
   id: 'G05',
   title: 'La voix passive (Passive Voice)',
@@ -292,7 +429,13 @@ export const G05 = {
     set('g05-m5e', 'Supplément Murphy', 'Unité 5E : remettre les mots dans l\'ordre', 'B1+', 'Écris la phrase complète avec les mots dans le bon ordre.', m5e,
       { group: 'Murphy supplement', title: 'Unit 5E: sentence building', desc: 'Write the complete sentence with the words in the right order.' }),
     set('g05-th', 'Supplément Murphy', 'Unité TH : thème grammatical', 'B1+', 'Traduis en anglais, puis compare avec le modèle.', th,
-      { group: 'Murphy supplement', title: 'Unit TH: translation', desc: 'Translate into English, then compare with the model.' })
+      { group: 'Murphy supplement', title: 'Unit TH: translation', desc: 'Translate into English, then compare with the model.' }),
+    set('g05-x1', 'Exercices supplémentaires', 'Supplément A : histoire et découvertes', 'B1+', 'Mets chaque phrase à la voix passive.', extraA,
+      { group: 'Extra exercises', title: 'Extra A: history and discoveries', desc: 'Put each sentence into the passive.' }),
+    set('g05-x2', 'Exercices supplémentaires', 'Supplément B : formes difficiles', 'B2', 'Complète avec la forme passive qui convient. Le verbe est donné entre parenthèses.', extraB,
+      { group: 'Extra exercises', title: 'Extra B: difficult forms', desc: 'Complete with the correct passive form. The verb is given in brackets.' }),
+    set('g05-x3', 'Exercices supplémentaires', 'Supplément C : actif, passif et corrections', 'B2+', 'Passer du passif à l\'actif, corriger des phrases, puis traduire.', extraC,
+      { group: 'Extra exercises', title: 'Extra C: active, passive and corrections', desc: 'Go from passive to active, correct sentences, then translate.' })
   ],
   recap: {
     blocks: [

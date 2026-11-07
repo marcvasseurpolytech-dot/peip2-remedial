@@ -35,6 +35,7 @@ const SET_SKILL = {
   'g04-m4c-1': T('Formes du futur', 'Future forms'), 'g04-m4c-2': T('Formes du futur', 'Future forms'),
   'g04-m4d': T('Ordre des mots', 'Word order'),
   'g05-guidee-b': T('Passif : modaux et cas complexes', 'Passive: modals and complex cases'),
+  'g05-x2': T('Passif : formes difficiles', 'Passive: difficult forms'),
   'g05-m5b': T('Passif : modaux et style scientifique', 'Passive: modals and scientific style'),
   'g05-m5c': T('It is said that, he is said to', 'It is said that, he is said to'),
   'g05-m5d': T('Have something done', 'Have something done'),
