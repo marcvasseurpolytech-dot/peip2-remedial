@@ -168,16 +168,18 @@ async function viewChapter(id) {
   const r = ch.recap;
   const rows = (arr) => arr.map(([a, b]) => `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`).join('');
   const mk = L('Marqueurs :', 'Time markers:');
+  // Rappel de cours générique : blocks (titre, formes, emplois, marqueurs), tables (titre, lignes), notes, règle.
+  const blocks = r.blocks || [r.simple, r.cont];
+  const tables = r.tables || [{ title: L("Verbes d'état (jamais au continu dans ce sens)", 'Stative verbs (never in the continuous in this sense)'), rows: r.stative }];
+  const notes = r.notes || [r.trap];
   const recap = `<details class="card recap" style="margin-bottom:1.2rem"><summary>${L('Rappel de cours', 'Course recap')}</summary>
     <div class="grid g2" style="margin-top:.8rem">
-      <div><h3>${esc(r.simple.title)}</h3><table><tbody>${rows(r.simple.forms)}</tbody></table>
-        <ul class="clean">${r.simple.uses.map(u => `<li>${esc(u)}</li>`).join('')}</ul><p class="small"><b>${mk}</b> ${esc(r.simple.marks)}</p></div>
-      <div><h3>${esc(r.cont.title)}</h3><table><tbody>${rows(r.cont.forms)}</tbody></table>
-        <ul class="clean">${r.cont.uses.map(u => `<li>${esc(u)}</li>`).join('')}</ul><p class="small"><b>${mk}</b> ${esc(r.cont.marks)}</p></div>
+      ${blocks.map(x => `<div><h3>${esc(x.title)}</h3>${x.forms && x.forms.length ? `<table><tbody>${rows(x.forms)}</tbody></table>` : ''}
+        ${x.uses && x.uses.length ? `<ul class="clean">${x.uses.map(u => `<li>${esc(u)}</li>`).join('')}</ul>` : ''}${x.marks ? `<p class="small"><b>${mk}</b> ${esc(x.marks)}</p>` : ''}</div>`).join('')}
     </div>
-    <h3>${L("Verbes d'état (jamais au continu dans ce sens)", 'Stative verbs (never in the continuous in this sense)')}</h3><table><tbody>${rows(r.stative)}</tbody></table>
-    <p class="small">${esc(r.trap)}</p><p><b>${esc(r.rule)}</b></p>
-    <p class="small"><a href="${esc(ch.coursUrl)}" target="_blank" rel="noopener">${L('Ouvrir le cours complet en diaporama', 'Open the full course slideshow (in French)')}</a></p></details>`;
+    ${tables.map(x => `<h3>${esc(x.title)}</h3><table><tbody>${rows(x.rows)}</tbody></table>`).join('')}
+    ${notes.map(n => `<p class="small">${esc(n)}</p>`).join('')}<p><b>${esc(r.rule)}</b></p>
+    ${ch.coursUrl ? `<p class="small"><a href="${esc(ch.coursUrl)}" target="_blank" rel="noopener">${L('Ouvrir le cours complet en diaporama', 'Open the full course slideshow (in French)')}</a></p>` : ''}</details>`;
   const sets = ch.sets.map(lz);
   const groups = [...new Set(sets.map(s => s.group))];
   const list = groups.map(g => `<div class="grouphead">${esc(g)}</div><div class="card">${sets.filter(s => s.group === g).map(s => {
