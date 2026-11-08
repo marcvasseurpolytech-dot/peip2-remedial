@@ -128,6 +128,54 @@ const th = [
   R("C'est de loin la pire panne que nous ayons connue.", ['This is by far the worst failure we have had.', 'This is by far the worst breakdown we have had.', "It's by far the worst failure we have had.", 'It is by far the worst failure we have ever had.', 'This is by far the worst failure we have ever had.', 'This is by far the worst breakdown we have ever had.', 'This is by far the worst failure we have experienced.'], 'by far + the worst : superlatif irrégulier.', 'by far + the worst: irregular superlative.')
 ];
 
+const XS = (...arrs) => arrs.reduce((a, b) => a.flatMap(x => b.map(y => x + y)), ['']);
+const synA = [
+  K('This laptop is ___ (light) than the previous model.', [['lighter']], "Cet ordinateur est plus léger que le modèle précédent.", 'adjectif court : -er + than.', 'short adjective: -er + than.'),
+  K('Of all the candidates, she is the ___ (qualified).', [['most qualified']], "De tous les candidats, c'est elle la plus qualifiée.", 'adjectif long : the most + adjectif.', 'long adjective: the most + adjective.'),
+  K('The second experiment was ___ (successful) than the first.', [['more successful']], "La deuxième expérience a mieux réussi que la première.", 'adjectif long : more + adjectif + than.', 'long adjective: more + adjective + than.'),
+  K('He drives ___ (carefully) than his brother.', [['more carefully']], "Il conduit avec plus de prudence que son frère.", 'adverbe en -ly : more + adverbe.', 'adverb in -ly: more + adverb.'),
+  K('Her results are ___ (bad) than mine.', [['worse']], "Ses résultats sont plus mauvais que les miens.", 'bad / worse / worst : forme irrégulière.', 'bad / worse / worst: irregular form.'),
+  K('This is by far the ___ (good) solution we have found.', [['best']], "C'est de loin la meilleure solution que nous ayons trouvée.", 'good / better / best : forme irrégulière.', 'good / better / best: irregular form.'),
+  K('The ___ (far) he walked, the ___ (tired) he felt.', [['farther', 'further'], ['more tired']], "Plus il marchait loin, plus il se sentait fatigué.", 'the + comparatif ..., the + comparatif ... : deux comparatifs, tired prend more.', 'the + comparative ..., the + comparative ...: two comparatives, tired takes more.'),
+  K('The software is not ___ (reliable) as we expected.', [['as reliable', 'so reliable']], "Le logiciel n'est pas aussi fiable que nous l'espérions.", 'not as ... as exprime une infériorité.', 'not as ... as expresses inferiority.'),
+  K('This bridge is twice ___ (long) the old one.', [['as long as']], "Ce pont est deux fois plus long que l'ancien.", 'twice as + adjectif + as : multiplicateur.', 'twice as + adjective + as: a multiplier.'),
+  K('She works ___ (hard) of all the team members.', [['the hardest']], "C'est elle qui travaille le plus dur de toute l'équipe.", 'superlatif de l\'adverbe : the hardest.', 'superlative of the adverb: the hardest.'),
+  K('We need ___ (few) mistakes than last time.', [['fewer']], "Il nous faut moins d'erreurs que la dernière fois.", 'fewer + nom dénombrable ; less + nom indénombrable.', 'fewer + countable noun; less + uncountable noun.'),
+  K('The ___ (early) we start, the ___ (soon) we will finish.', [['earlier'], ['sooner']], "Plus tôt nous commençons, plus tôt nous finirons.", 'the + comparatif ..., the + comparatif ...', 'the + comparative ..., the + comparative ...'),
+  K('It is one of the ___ (important) discoveries of the century.', [['most important']], "C'est l'une des découvertes les plus importantes du siècle.", 'one of the + superlatif + nom pluriel.', 'one of the + superlative + plural noun.'),
+  K('Demand is getting ___ (strong).', [['stronger and stronger']], "La demande devient de plus en plus forte.", 'comparatif répété : -er and -er.', 'repeated comparative: -er and -er.'),
+  K('Her presentation was ___ (convincing) than his.', [['less convincing']], "Son exposé était moins convaincant que le sien.", 'less + adjectif + than : infériorité.', 'less + adjective + than: inferiority.')
+];
+const synB = [
+  R("Ce modèle est deux fois plus cher que l'ancien.", XS(['This model is twice as expensive as '], ['the old one.', 'the old model.', 'the previous one.', 'the previous model.'])),
+  R("Plus nous attendons, plus le risque augmente.", XS(['The longer we wait, the '], ['more the risk increases.', 'higher the risk gets.', 'higher the risk becomes.', 'greater the risk becomes.', 'greater the risk gets.', 'more the risk grows.', 'higher the risk is.'])),
+  R("Il est le plus rapide de toute l'équipe.", XS(['He is the fastest '], ['in the whole team.', 'in the entire team.', 'in the team.', 'on the whole team.', 'on the team.', 'on the entire team.'])),
+  R("Elle parle anglais aussi couramment que son frère.", XS(['She speaks English as fluently as '], ['her brother.', 'her brother does.', 'her brother speaks it.'])),
+  R("Cette solution n'est pas aussi efficace que la précédente.", XS(['This solution is not ', "This solution isn't ", 'This solution is not quite '], ['as ', 'so '], ['effective as '], ['the previous one.', 'the last one.', 'the previous solution.', 'the earlier one.', 'the former one.'])),
+  R("Les résultats sont de plus en plus encourageants.", XS(['The results are '], ['increasingly encouraging.', 'more and more encouraging.', 'getting more and more encouraging.', 'becoming more and more encouraging.', 'becoming increasingly encouraging.', 'getting increasingly encouraging.'])),
+  R("C'est de loin le projet le plus ambitieux de l'école.", XS(['It is ', "It's ", 'This is ', 'That is '], ['by far the most ambitious project '], ['in the school.', 'at the school.', 'in our school.', 'at our school.', 'of the school.'])),
+  R("Il y a moins de bruit ici qu'à l'étage.", XS(['There is ', "There's "], ['less noise '], ['here than upstairs.', 'here than on the floor above.', 'in here than upstairs.']), 'bruit est indénombrable : less.', 'noise is uncountable: less.'),
+  R("Ils ont le même salaire que nous.", XS(['They earn the same salary as ', 'They have the same salary as ', 'They earn the same as ', 'They get the same salary as '], ['us.', 'we do.', 'we.'])),
+  R("Mon nouveau téléphone est bien meilleur que l'ancien.", XS(['My new phone is '], ['much ', 'far ', 'a lot ', 'way '], ['better than '], ['the old one.', 'my old one.', 'the previous one.', 'my previous one.'])),
+  R("C'est la meilleure conférence que j'aie jamais suivie.", XS(['It is ', "It's ", 'This is ', 'That is '], ['the best '], ['conference ', 'lecture '], ['I have ever '], ['attended.', 'been to.', 'seen.', "been to."]), 'superlatif + present perfect avec ever.', 'superlative + present perfect with ever.'),
+  R("Cette méthode est légèrement moins chère que l'autre.", XS(['This method is '], ['slightly cheaper ', 'a little cheaper ', 'a bit cheaper ', 'slightly less expensive ', 'a little less expensive ', 'a bit less expensive '], ['than the other one.', 'than the other.', 'than the other method.'])),
+  R("Plus le matériau est léger, plus il est facile à transporter.", XS(['The lighter the material, the '], ['easier it is to carry.', 'easier it is to transport.', 'easier it is to move.', 'easier it is to handle.', 'easier it is to take around.']))
+];
+const synC = [
+  P("Corrige l'erreur.", 'This exam was more easy than the last one.', ['This exam was easier than the last one.'], "Regarde la longueur de l'adjectif.", 'Rewrite the sentence, correcting the mistake.', 'Look at the length of the adjective.'),
+  P("Corrige l'erreur.", 'She is the more talented student in the class.', ['She is the most talented student in the class.'], "Combien de personnes compare-t-on ?", 'Rewrite the sentence, correcting the mistake.', 'How many people are being compared?'),
+  P("Corrige l'erreur.", 'He runs more fast than me.', ['He runs faster than me.', 'He runs faster than I do.', 'He runs faster than I.'], "Fast a la même forme comme adjectif et comme adverbe.", 'Rewrite the sentence, correcting the mistake.', 'Fast has the same form as an adjective and as an adverb.'),
+  P("Corrige l'erreur.", 'It is the most cheap option available.', ['It is the cheapest option available.'], "Adjectif court ou long ?", 'Rewrite the sentence, correcting the mistake.', 'Short or long adjective?'),
+  P("Corrige l'erreur.", 'My brother is taller as me.', ['My brother is taller than me.', 'My brother is taller than I am.', 'My brother is taller than I.'], "Quel mot suit un comparatif ?", 'Rewrite the sentence, correcting the mistake.', 'Which word follows a comparative?'),
+  P("Corrige l'erreur.", 'The more we practise, the more better we get.', ['The more we practise, the better we get.', 'The more we practice, the better we get.'], "Better est déjà un comparatif.", 'Rewrite the sentence, correcting the mistake.', 'Better is already a comparative.'),
+  P("Corrige l'erreur.", 'This is the worse report I have ever read.', ['This is the worst report I have ever read.'], "Après the, quelle forme ?", 'Rewrite the sentence, correcting the mistake.', 'What form follows the?'),
+  P("Corrige l'erreur.", 'She is the most intelligent of the school.', ['She is the most intelligent in the school.', 'She is the most intelligent student in the school.'], "Quelle préposition devant un lieu ou un groupe ?", 'Rewrite the sentence, correcting the mistake.', 'Which preposition goes before a place or a group?'),
+  P("Corrige l'erreur.", 'Their offer is not so good than ours.', ['Their offer is not so good as ours.', 'Their offer is not as good as ours.'], "Quel mot relie les deux termes de la comparaison ?", 'Rewrite the sentence, correcting the mistake.', 'Which word links the two sides of the comparison?'),
+  P("Corrige l'erreur.", 'We have less chairs than last year.', ['We have fewer chairs than last year.'], "Chairs est-il dénombrable ?", 'Rewrite the sentence, correcting the mistake.', 'Is chairs countable?'),
+  P("Corrige l'erreur.", 'He is as taller as his father.', ['He is as tall as his father.'], "Pas de -er dans as ... as.", 'Rewrite the sentence, correcting the mistake.', 'No -er inside as ... as.'),
+  P("Corrige l'erreur.", 'This is a more better design than before.', ['This is a better design than before.'], "Un seul comparatif suffit.", 'Rewrite the sentence, correcting the mistake.', 'One comparative is enough.')
+];
+
 const FORM = SK('Comparatifs et superlatifs : formation', 'Comparatives and superlatives: formation');
 const ADV = SK('Comparatifs : the more..., de plus en plus, renforcement', 'Comparatives: the more..., more and more, intensifiers');
 export const G12 = {
@@ -141,7 +189,10 @@ export const G12 = {
     'g12-bonus': SK('Quantité : more, fewer, less', 'Quantity: more, fewer, less'),
     'g12-niv-c': SK('Comparatifs : corrections et thème', 'Comparatives: corrections and translation'),
     'g12-th': SK('Comparatifs : corrections et thème', 'Comparatives: corrections and translation'),
-    'g12-m12b': SK('Ordre des mots', 'Word order')
+    'g12-m12b': SK('Ordre des mots', 'Word order'),
+    'g12-synth-a': SK('Synthèse : toutes les formes à construire', 'Review: building all the forms'),
+    'g12-synth-b': SK('Synthèse : thème', 'Review: translation'),
+    'g12-synth-c': SK('Synthèse : repérer et corriger', 'Review: spotting and correcting')
   },
   sets: [
     S('g12-guidee-a', FICHE, ['Série guidée A : comparatif', 'Guided set A: comparative'], 'B1', ['Complète avec la forme comparative correcte.', 'Complete with the correct comparative form.'], guideeA),
@@ -152,6 +203,9 @@ export const G12 = {
     S('g12-niv-d', FICHE, ['Niveau D : production et analyse', 'Level D: production and analysis'], 'B2', ['Complète librement, puis compare avec le modèle.', 'Complete freely, then compare with the model.'], nivD),
     S('g12-bonus', FICHE, ['Bonus : comparatif de quantité', 'Bonus: comparing quantity'], 'B1+', ['Complète avec more, fewer ou less.', 'Complete with more, fewer or less.'], bonus),
     S('g12-devoir', FICHE, ['Devoir maison', 'Homework'], 'B1+', ['Quinze phrases à compléter avec la forme correcte.', 'Fifteen sentences to complete with the correct form.'], devoir),
+    S('g12-synth-a', FICHE, ['Synthèse A : construis la bonne forme', 'Review A: build the right form'], 'B1+', ['Mets l\'adjectif ou l\'adverbe à la forme qui convient.', 'Put the adjective or adverb in the right form.'], synA),
+    S('g12-synth-b', FICHE, ['Synthèse B : thème', 'Review B: translation'], 'B2', ['Traduis en anglais, puis compare avec le modèle et évalue-toi.', 'Translate into English, then compare with the model and assess yourself.'], synB),
+    S('g12-synth-c', FICHE, ['Synthèse C : repère et corrige l\'erreur', 'Review C: spot and correct the error'], 'B2', ['Réécris la phrase correctement, puis compare avec le modèle et évalue-toi.', 'Rewrite the sentence correctly, then compare with the model and assess yourself.'], synC),
     S('g12-m12a-1', MURPHY, ['Unité 12A : formation (1/2)', 'Unit 12A: formation (1/2)'], 'B1', ['Forme le comparatif ou le superlatif.', 'Form the comparative or superlative.'], m12a1),
     S('g12-m12a-2', MURPHY, ['Unité 12A : structures avancées (2/2)', 'Unit 12A: advanced structures (2/2)'], 'B1+', ['Complète avec la bonne structure.', 'Complete with the right structure.'], m12a2),
     S('g12-m12b', MURPHY, ['Unité 12B : remettre les mots dans l\'ordre', 'Unit 12B: sentence building'], 'B1+', ['Écris la phrase complète avec les mots dans le bon ordre.', 'Write the complete sentence with the words in the right order.'], m12b),
