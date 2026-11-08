@@ -111,6 +111,57 @@ const th = [
   R("Moi aussi, je dois y aller.", ['So must I.', 'So do I.', 'So have I.'], 'Modal must : so must I (so do I avec have to).', 'Modal must: so must I (so do I with have to).'),
   R("Moi non plus, je n'y étais pas.", ['Neither was I.', 'Nor was I.'], 'Prétérit de be négatif : neither was I.', 'Negative past of be: neither was I.')
 ];
+const MT = ['Me too.'];
+const MN = ['Me neither.'];
+const INF = ' (Me too / Me neither, plus familiers, restent corrects.)';
+const INFE = ' (Me too / Me neither, more informal, are also correct.)';
+const synA = [
+  AG("A: I'm learning German this semester.", [...so('am'), ...MT], "A : J'apprends l'allemand ce semestre. B : Moi aussi.", POS + ' Présent continu : am.' + INF, POSE + ' Present continuous: am.' + INFE),
+  AG("A: She doesn't like early meetings.", [...ne('do'), ...MN], "A : Elle n'aime pas les réunions matinales. B : Moi non plus.", NEG + ' Présent simple : do.' + INF, NEGE + ' Present simple: do.' + INFE),
+  AG("A: They've finished the prototype.", [...so('have', ['we', 'I'])], "A : Ils ont terminé le prototype. B : Nous aussi.", POS + ' Present perfect : have.', POSE + ' Present perfect: have.'),
+  AG("A: He wasn't aware of the problem.", [...ne('was', ['I', 'she', 'he']), ...MN], "A : Il n'était pas au courant du problème. B : Moi non plus.", NEG + ' Prétérit de be : was.' + INF, NEGE + ' Past of be: was.' + INFE),
+  AG('A: We must submit it by Friday.', [...so('must', ['I', 'we']), ...MT], "A : Nous devons le rendre avant vendredi. B : Moi aussi.", POS + ' Modal must.' + INF, POSE + ' Modal must.' + INFE),
+  AG("A: I'd love to visit Tokyo.", [...so('would'), ...MT], "A : J'aimerais beaucoup visiter Tokyo. B : Moi aussi.", POS + " I'd = I would : would." + INF, POSE + " I'd = I would: would." + INFE),
+  AG("A: She isn't coming to the party.", [...ne('am'), ...ne('is', ['he']), ...MN], "A : Elle ne vient pas à la fête. B : Moi non plus.", NEG + ' Présent continu : am (pour I) ou is (pour he).' + INF, NEGE + ' Present continuous: am (for I) or is (for he).' + INFE),
+  AG('A: I went to the conference last year.', [...so('did'), ...MT], "A : Je suis allé à la conférence l'an dernier. B : Moi aussi.", POS + ' Prétérit : did.' + INF, POSE + ' Past simple: did.' + INFE),
+  AG("A: I haven't answered my emails.", [...ne('have'), ...MN], "A : Je n'ai pas répondu à mes courriels. B : Moi non plus.", NEG + ' Present perfect : have.' + INF, NEGE + ' Present perfect: have.' + INFE),
+  AG('A: I should apply for that job.', [...so('should'), ...MT], "A : Je devrais postuler à ce poste. B : Moi aussi.", POS + ' Modal should.' + INF, POSE + ' Modal should.' + INFE),
+  AG("A: We didn't expect such a result.", [...ne('did', ['we', 'I']), ...MN], "A : Nous ne nous attendions pas à un tel résultat. B : Nous non plus.", NEG + ' Prétérit : did.' + INF, NEGE + ' Past simple: did.' + INFE),
+  AG('A: I can speak Spanish.', [...so('can'), ...MT], "A : Je sais parler espagnol. B : Moi aussi.", POS + ' Modal can.' + INF, POSE + ' Modal can.' + INFE),
+  DG('A: I love early mornings. B: (you do not)', ["I don't.", 'I do not.', "Actually, I don't.", "No, I don't.", "Not me, I don't."], "A : J'adore les petits matins. B : Pas moi.", DIS, DISE),
+  DG("A: She can't swim. B: (she can)", ['She can.', 'Actually, she can.', 'Yes, she can.', 'She can, actually.'], "A : Elle ne sait pas nager. B : Si, elle sait.", DIS, DISE),
+  DG("A: We didn't win. B: (we did)", ['We did.', 'Actually, we did.', 'Yes, we did.', 'We did, actually.'], "A : Nous n'avons pas gagné. B : Si, nous avons gagné.", DIS, DISE)
+];
+const synB = [
+  R("A : J'adore cette série. B : Moi aussi.", ['A: I love this series. B: So do I.', "A: I love this series. B: Me too."], 'Phrase affirmative : so do I.', 'Affirmative sentence: so do I.'),
+  R("A : Je n'ai pas compris l'exercice. B : Moi non plus.", ["A: I didn't understand the exercise. B: Neither did I.", "A: I didn't understand the exercise. B: Nor did I.", "A: I didn't understand the exercise. B: Me neither."], 'Phrase négative : neither did I.', 'Negative sentence: neither did I.'),
+  R("A : Elle a déjà postulé. B : Lui aussi.", ['A: She has already applied. B: So has he.', "A: She's already applied. B: So has he."], 'Present perfect : so has he.', 'Present perfect: so has he.'),
+  R("A : Je ne peux pas venir demain. B : Moi non plus.", ["A: I can't come tomorrow. B: Neither can I.", "A: I can't come tomorrow. B: Nor can I.", "A: I cannot come tomorrow. B: Neither can I.", "A: I can't come tomorrow. B: Me neither."], 'Modal négatif : neither can I.', 'Negative modal: neither can I.'),
+  R("A : Nous étions en retard. B : Eux aussi.", ['A: We were late. B: So were they.', 'A: We were late. B: They were too.'], 'Prétérit de be : so were they.', 'Past of be: so were they.'),
+  R("A : Il n'a jamais voyagé en avion. B : Elle non plus.", ['A: He has never travelled by plane. B: Neither has she.', 'A: He has never travelled by plane. B: Nor has she.', 'A: He has never flown. B: Neither has she.', 'A: He has never traveled by plane. B: Neither has she.'], 'Never est déjà négatif : neither has she.', 'Never is already negative: neither has she.'),
+  R("A : Je travaillerai à la maison demain. B : Moi aussi.", ["A: I'll work at home tomorrow. B: So will I.", "A: I will work at home tomorrow. B: So will I.", "A: I'll work from home tomorrow. B: So will I."], 'Futur : so will I.', 'Future: so will I.'),
+  R("A : Je déteste les réunions du lundi. B : Moi, je les aime.", ['A: I hate Monday meetings. B: I don\'t, I like them.', 'A: I hate Monday meetings. B: Actually, I like them.', 'A: I hate Monday meetings. B: Well, I like them.'], 'Désaccord : auxiliaire de sens contraire, ou reformulation.', 'Disagreement: auxiliary of opposite polarity, or a rephrasing.'),
+  R("A : Elle n'est pas contente. B : Si, elle l'est.", ["A: She isn't happy. B: Yes, she is.", "A: She is not happy. B: Yes, she is.", "A: She isn't happy. B: Actually, she is."], 'A négatif : B répond avec un auxiliaire affirmatif.', 'A is negative: B answers with an affirmative auxiliary.'),
+  R("A : Ils ont gagné. B : Non, ils n'ont pas gagné.", ["A: They won. B: No, they didn't.", "A: They won. B: No, they did not.", "A: They won. B: Actually, they didn't."], 'A affirmatif : B répond avec un auxiliaire négatif.', 'A is affirmative: B answers with a negative auxiliary.'),
+  R("A : Je ne suis pas d'accord. B : Moi non plus.", ["A: I don't agree. B: Neither do I.", "A: I do not agree. B: Neither do I.", "A: I don't agree. B: Nor do I.", "A: I don't agree. B: Me neither."], 'Présent simple négatif : neither do I.', 'Negative present simple: neither do I.'),
+  R("A : Mon frère adore le jazz. B : Le mien aussi.", ['A: My brother loves jazz. B: So does mine.', 'A: My brother loves jazz. B: Mine does too.', 'A: My brother loves jazz. B: So does my brother.'], 'Sujet différent : so does mine.', 'Different subject: so does mine.'),
+  R("A : Je préférerais partir tôt. B : Moi aussi.", ["A: I'd rather leave early. B: So would I.", "A: I would rather leave early. B: So would I.", "A: I'd prefer to leave early. B: So would I."], 'Would rather / would prefer : so would I.', 'Would rather / would prefer: so would I.')
+];
+const synC = [
+  P("Corrige la réponse de B.", 'A: I love chocolate. B: So I do.', ['A: I love chocolate. B: So do I.'], "Place l'auxiliaire avant le sujet.", 'Correct the reply of B.', 'Put the auxiliary before the subject.'),
+  P("Corrige la réponse de B.", "A: I can't swim. B: Neither I can.", ["A: I can't swim. B: Neither can I.", "A: I can't swim. B: Nor can I."], "Après neither, l'ordre est inversé.", 'Correct the reply of B.', 'After neither, the order is inverted.'),
+  P("Corrige la réponse de B.", 'A: She works hard. B: So does I.', ['A: She works hard. B: So do I.'], "L'auxiliaire s'accorde avec le sujet de B.", 'Correct the reply of B.', 'The auxiliary agrees with the subject of B.'),
+  P("Corrige la réponse de B.", "A: I don't like fish. B: Neither don't I.", ["A: I don't like fish. B: Neither do I.", "A: I don't like fish. B: Nor do I."], "Neither contient déjà la négation.", 'Correct the reply of B.', 'Neither already contains the negative.'),
+  P("Corrige la réponse de B.", 'A: He is tired. B: So is I.', ['A: He is tired. B: So am I.'], "Quelle forme de be avec I ?", 'Correct the reply of B.', 'Which form of be goes with I?'),
+  P("Corrige la réponse de B.", "A: They didn't come. B: Nor they did.", ["A: They didn't come. B: Nor did we.", "A: They didn't come. B: Neither did we.", "A: They didn't come. B: Nor did I.", "A: They didn't come. B: Neither did I."], "Inverse l'auxiliaire et le sujet.", 'Correct the reply of B.', 'Invert the auxiliary and the subject.'),
+  P("Corrige la réponse de B.", 'A: I will go. B: So will me.', ['A: I will go. B: So will I.'], "Après l'auxiliaire, quelle forme du pronom ?", 'Correct the reply of B.', 'After the auxiliary, which pronoun form?'),
+  P("Corrige la réponse de B.", "A: She doesn't smoke. B: Neither am I.", ["A: She doesn't smoke. B: Neither do I.", "A: She doesn't smoke. B: Nor do I."], "Reprends l'auxiliaire de la phrase de A.", 'Correct the reply of B.', "Repeat the auxiliary of A's sentence."),
+  P("Corrige la réponse de B.", 'A: I like jazz. B: Neither do I.', ['A: I like jazz. B: So do I.'], "A est affirmatif : quel mot d'accord ?", 'Correct the reply of B.', 'A is affirmative: which word of agreement?'),
+  P("Corrige la réponse de B.", "A: I'm not tired. B: Me too.", ["A: I'm not tired. B: Me neither.", "A: I'm not tired. B: Neither am I.", "A: I'm not tired. B: Nor am I."], "Me too ne convient pas à une phrase négative.", 'Correct the reply of B.', 'Me too does not suit a negative sentence.'),
+  P("Corrige la réponse de B.", 'A: We were late. B: So did we.', ['A: We were late. B: So were we.'], "Reprends le verbe de A, pas un auxiliaire différent.", 'Correct the reply of B.', "Repeat the verb of A, not a different auxiliary."),
+  P("Corrige la réponse de B.", "A: I haven't finished. B: Neither I have.", ["A: I haven't finished. B: Neither have I.", "A: I haven't finished. B: Nor have I."], "Inverse l'auxiliaire et le sujet.", 'Correct the reply of B.', 'Invert the auxiliary and the subject.')
+];
+
 const A = SK('Accord avec so et neither', 'Agreeing with so and neither');
 const B = SK('Désaccord : répondre par un auxiliaire', 'Disagreeing with an auxiliary');
 export const G20 = {
@@ -123,7 +174,10 @@ export const G20 = {
     'g20-niv-c': SK('Accord et désaccord : thème', 'Agreement and disagreement: translation'),
     'g20-th': SK('Accord et désaccord : thème', 'Agreement and disagreement: translation'),
     'g20-bonus': SK('Réponses courtes variées', 'Varied short answers'),
-    'g20-m20b': SK('Ordre des mots', 'Word order')
+    'g20-m20b': SK('Ordre des mots', 'Word order'),
+    'g20-synth-a': SK('Synthèse : construire la réponse', 'Review: building the reply'),
+    'g20-synth-b': SK('Synthèse : thème', 'Review: translation'),
+    'g20-synth-c': SK('Synthèse : repérer et corriger', 'Review: spotting and correcting')
   },
   sets: [
     S('g20-guidee-a', FICHE, ['Série guidée A : so et neither', 'Guided set A: so and neither'], 'B1', ['Exprime l\'accord avec so ou neither.', 'Express agreement with so or neither.'], guideeA),
@@ -133,6 +187,9 @@ export const G20 = {
     S('g20-niv-c', FICHE, ['Niveau C : traduction', 'Level C: translation'], 'B1+', ['Traduis le dialogue en anglais.', 'Translate the dialogue into English.'], nivC),
     S('g20-bonus', FICHE, ['Bonus : réponses courtes variées', 'Bonus: varied short answers'], 'B2', ['Réponds de plusieurs façons, puis compare avec le modèle.', 'Answer in several ways, then compare with the model.'], bonus),
     S('g20-devoir', FICHE, ['Devoir maison', 'Homework'], 'B1+', ['Quinze réponses à écrire.', 'Fifteen replies to write.'], devoir),
+    S('g20-synth-a', FICHE, ['Synthèse A : construis la réponse', 'Review A: build the reply'], 'B1+', ['Réponds à A en exprimant l\'accord ou le désaccord demandé.', 'Reply to A expressing the agreement or disagreement asked for.'], synA),
+    S('g20-synth-b', FICHE, ['Synthèse B : thème', 'Review B: translation'], 'B2', ['Traduis le dialogue en anglais, puis compare avec le modèle et évalue-toi.', 'Translate the dialogue into English, then compare with the model and assess yourself.'], synB),
+    S('g20-synth-c', FICHE, ['Synthèse C : repère et corrige l\'erreur', 'Review C: spot and correct the error'], 'B2', ['Réécris le dialogue avec la réponse de B corrigée, puis compare avec le modèle et évalue-toi.', 'Rewrite the dialogue with B\'s reply corrected, then compare with the model and assess yourself.'], synC),
     S('g20-m20a', MURPHY, ['Unité 20A : accord et désaccord', 'Unit 20A: agreement and disagreement'], 'B1', ['Réponds à A.', 'Reply to A.'], m20a),
     S('g20-m20b', MURPHY, ['Unité 20B : remettre les mots dans l\'ordre', 'Unit 20B: sentence building'], 'B1', ['Écris la réponse avec les mots dans le bon ordre.', 'Write the reply with the words in the right order.'], m20b),
     S('g20-th', MURPHY, ['Unité TH : thème grammatical', 'Unit TH: translation'], 'B1', ['Traduis en anglais avec so ou neither.', 'Translate into English with so or neither.'], th)
