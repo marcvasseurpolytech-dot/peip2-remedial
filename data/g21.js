@@ -1,5 +1,6 @@
 // G21 : Faux amis et mots confusants
 import { S, FICHE, MURPHY, F, OK, R, W, P, K, SK } from './dsl2.js';
+import { ch, E } from './dsl.js';
 
 const guideeA = [
   K('She is very ___ (= raisonnable, sensée) about risk management.', [['sensible']], "Elle est très raisonnable en matière de gestion des risques.", 'sensible = raisonnable ; sensitive = sensible (au toucher, aux émotions).', 'sensible = reasonable; sensitive = easily affected.'),
@@ -119,6 +120,58 @@ const th = [
   R("La panne touche toute la chaîne de montage.", ['The breakdown affects the whole assembly line.', 'The breakdown affects the entire assembly line.', 'The failure affects the whole assembly line.', 'The failure affects the entire assembly line.', 'The breakdown is affecting the whole assembly line.', 'The breakdown is affecting the entire assembly line.'], 'affecter = affect.', 'affecter = affect.'),
   R("Notre priorité principale est la qualité.", ['Our main priority is quality.', 'Our main priority is the quality.', 'Our principal priority is quality.', 'Our top priority is quality.', 'Our primary priority is quality.', 'Our chief priority is quality.'], 'principal = main, principal.', 'principal = main, principal.')
 ];
+
+const VF = (s, truth, fr, why, whyEn) => ch(s + ' This is ___.', ['true', 'false'], truth ? 0 : 1, fr, why, E(whyEn, null, { s: s + ' This is ___.', o: ['true', 'false'] }));
+const CH2 = (s, o, k, fr, why, whyEn) => ch(s, o, k, fr, why, E(whyEn, null, { s, o }));
+const vf = [
+  VF('The English word "library" means a shop where you buy books.', false, "Le mot anglais library désigne une librairie où l'on achète des livres : faux.", 'library = bibliothèque, où l\'on emprunte ; la librairie se dit bookshop.', 'a library lends books; a shop that sells them is a bookshop.'),
+  VF('"Eventually" means "in the end, after a long time".', true, "Eventually signifie finalement, au bout d'un long moment : vrai.", 'eventually = finalement.', 'eventually refers to the final result after a delay.'),
+  VF('"Actually" means "at the present time".', false, "Actually signifie en fait, pas actuellement : faux.", 'actually = en fait ; actuellement se dit currently.', 'actually means in fact; for now, say currently.'),
+  VF('"I assisted the lecture" means "I was present at the lecture".', false, "I assisted the lecture ne veut pas dire que j'y ai assisté : faux.", 'assister à se dit attend ; assist = aider.', 'to be present at is attend; assist means help.'),
+  VF('"Sensible" means "reasonable and practical".', true, "Sensible signifie raisonnable et pratique : vrai.", 'sensible = raisonnable ; sensitive = sensible.', 'sensible means showing good judgement.'),
+  VF('"To pretend" means "to say that something is true".', false, "To pretend signifie faire semblant, pas prétendre : faux.", 'pretend = faire semblant ; prétendre se dit claim.', 'pretend means act as if; to say something is true is claim.'),
+  VF('"Sympathetic" can mean "understanding someone\'s feelings".', true, "Sympathetic peut signifier compréhensif envers les sentiments de quelqu'un : vrai.", 'sympathetic = compréhensif, compatissant.', 'sympathetic shows understanding of someone\'s feelings.'),
+  VF('"To demand" is a polite way of asking for something.', false, "To demand est une exigence ferme, pas une demande polie : faux.", 'demand = exiger ; demander poliment = ask.', 'demand is firm; a polite request is ask.'),
+  VF('"Large" means "wide".', false, "Large signifie grand, pas large : faux.", 'large = grand ; large (au sens de largeur) = wide.', 'large means big; wide describes distance from side to side.'),
+  VF('"To deceive" means "to disappoint".', false, "To deceive signifie tromper, pas décevoir : faux.", 'deceive = tromper ; disappoint = décevoir.', 'deceive means trick; disappoint means let down.'),
+  VF('"Comprehensive" means "complete and covering everything".', true, "Comprehensive signifie complet : vrai.", 'comprehensive = complet, exhaustif.', 'comprehensive means including everything.'),
+  VF('A "lecture" is a talk given to students.', true, "Un lecture est un cours magistral donné à des étudiants : vrai.", 'lecture = cours magistral ; lecture (français) = reading.', 'a lecture is a talk given to students; reading is the activity of reading.')
+];
+const trou = [
+  K('The ___ (= réel) cost was twice the estimate.', [['actual', 'real', 'true']], "Le coût réel a été le double de l'estimation.", 'actual = réel, effectif ; actuel se dit current.', 'actual = real; the idea of now is current.'),
+  K('We will ___ (= reprendre) the discussion after lunch.', [['resume', 'continue']], "Nous reprendrons la discussion après le déjeuner.", 'resume = reprendre ; un CV se dit résumé ou CV.', 'resume (verb) = start again after a pause.'),
+  K('Please send your ___ (= CV) with the application form.', [['cv', 'resume', 'résumé', 'curriculum vitae']], "Envoyez votre CV avec le formulaire de candidature.", 'CV = CV ou résumé (américain).', 'CV in British English; resume in American English.'),
+  K('He gave an interesting ___ (= cours magistral) on robotics.', [['lecture', 'talk']], "Il a donné un cours magistral intéressant sur la robotique.", 'lecture = cours magistral.', 'lecture = talk given to students.'),
+  K('The ___ (= ordre du jour) of the meeting has five items.', [['agenda']], "L'ordre du jour de la réunion comporte cinq points.", 'agenda = ordre du jour ; agenda (français) = diary.', 'agenda = list of items to discuss; a diary is a planner.'),
+  K('She was ___ (= blessée) in a car accident.', [['injured', 'hurt', 'wounded']], "Elle a été blessée dans un accident de voiture.", 'blesser = injure, hurt ; blessed a un autre sens.', 'injured = physically harmed; blessed means something else.'),
+  K('Is this a good ___ (= emplacement) for the new plant?', [['location', 'site', 'place', 'spot']], "Est-ce un bon emplacement pour la nouvelle usine ?", 'location = emplacement, lieu ; location (français) = rental.', 'location = place; for renting, say rental.'),
+  K('He decided to ___ (= rester) at home all day.', [['stay', 'remain']], "Il a décidé de rester chez lui toute la journée.", 'rester = stay ; rest = se reposer.', 'stay = remain in a place; rest means relax.'),
+  K('We ran an ___ (= expérience scientifique) to test the theory.', [['experiment']], "Nous avons mené une expérience pour tester la théorie.", 'experiment = expérience scientifique ; experience = vécu.', 'experiment = scientific test; experience = what you have lived through.'),
+  K('The ___ (= client) complained about the bill.', [['customer', 'client']], "Le client s'est plaint de l'addition.", 'customer = client d\'un magasin ; client = client d\'un service.', 'customer buys goods; client buys a service.'),
+  K('There is not enough ___ (= place) for everyone in this office.', [['room', 'space']], "Il n'y a pas assez de place pour tout le monde dans ce bureau.", 'room / space = place, espace ; place a un autre sens.', 'room / space = available area.'),
+  K('Good ___ (= bonne chance) with the exam!', [['luck']], "Bonne chance pour l'examen !", 'luck = chance ; chance = occasion, probabilité.', 'luck = good fortune; chance means opportunity.')
+];
+const spot = [
+  F('He is a very sensible person, he cries at every film.', ['He is a very sensitive person, he cries at every film.', 'He is a very sensitive person; he cries at every film.'], "C'est une personne très sensible, il pleure à chaque film.", 'sensible = raisonnable ; sensitive = sensible.', 'sensible = reasonable; sensitive = easily moved.'),
+  F("I'm going to the library to buy a dictionary.", ["I'm going to the bookshop to buy a dictionary.", "I'm going to the bookstore to buy a dictionary.", 'I am going to the bookshop to buy a dictionary.', 'I am going to the bookstore to buy a dictionary.'], "Je vais à la librairie acheter un dictionnaire.", 'On achète un livre dans une bookshop.', 'You buy books in a bookshop.'),
+  OK('Actually, I disagree with your last point.', "En fait, je ne suis pas d'accord avec votre dernier point.", 'actually = en fait : emploi correct.', 'actually = in fact: correct use.'),
+  F('I read the lecture of this chapter twice.', ['I read this chapter twice.'], "J'ai lu ce chapitre deux fois.", 'lecture = cours ; l\'action de lire se dit reading.', 'lecture = talk; the act of reading is reading.'),
+  F('His team lost, which was a big deception for him.', ['His team lost, which was a big disappointment for him.'], "Son équipe a perdu, ce qui a été une grande déception pour lui.", 'déception = disappointment ; deception = tromperie.', 'disappointment = let-down; deception = trickery.'),
+  F('We need to assist the meeting at ten.', ['We need to attend the meeting at ten.', 'We need to be at the meeting at ten.'], "Nous devons assister à la réunion à dix heures.", 'assister à = attend.', 'to be present at = attend.'),
+  OK('The students are waiting for the lecturer in the hall.', "Les étudiants attendent le conférencier dans le hall.", 'lecturer = enseignant-conférencier : emploi correct.', 'lecturer = person who gives lectures: correct use.'),
+  OK('The meeting will resume after lunch.', "La réunion reprendra après le déjeuner.", 'resume = reprendre : emploi correct.', 'resume = start again: correct use.'),
+  F('He passed an exam yesterday, but we do not know the result yet.', ['He took an exam yesterday, but we do not know the result yet.', 'He sat an exam yesterday, but we do not know the result yet.', 'He sat for an exam yesterday, but we do not know the result yet.', 'He took an exam yesterday but we do not know the result yet.'], "Il a passé un examen hier, mais nous ne connaissons pas encore le résultat.", 'passer un examen = take / sit ; pass = réussir.', 'passer un examen = take / sit; pass = succeed in.'),
+  F('She wears a big pull in winter.', ['She wears a big sweater in winter.', 'She wears a big jumper in winter.', 'She wears a big pullover in winter.', 'She wears a big sweatshirt in winter.', 'She wears a big woolly jumper in winter.'], "Elle porte un gros pull en hiver.", 'pull = sweater, jumper ; pull = tirer.', 'a pull-over is a sweater or jumper; pull means draw towards you.'),
+  OK('The tourists took photos of the monument.', "Les touristes ont pris des photos du monument.", 'Phrase correcte, aucun faux ami.', 'The sentence is correct, no false friend.')
+];
+const choix = [
+  CH2('I need to ___ a car for the weekend.', ['rent', 'locate'], 0, "J'ai besoin de louer une voiture pour le week-end.", 'rent = louer ; locate = situer, repérer.', 'rent = pay to use; locate = find the position of.'),
+  CH2('Three people were ___ in the crash.', ['damaged', 'injured'], 1, "Trois personnes ont été blessées dans l'accident.", 'injured pour une personne ; damaged pour un objet.', 'injured is for people; damaged is for objects.'),
+  CH2('The bridge was badly ___ in the storm.', ['damaged', 'injured'], 0, "Le pont a été gravement endommagé pendant la tempête.", 'damaged pour un objet.', 'damaged is for objects.'),
+  CH2('The printer needs a new ink ___.', ['cartridge', 'cartouche'], 0, "L'imprimante a besoin d'une nouvelle cartouche d'encre.", 'cartouche (français) = cartridge.', 'the correct English spelling is cartridge.'),
+  CH2('I have a ___ in the afternoon: a talk about solar power.', ['reading', 'lecture'], 1, "J'ai un cours magistral cet après-midi : une conférence sur l'énergie solaire.", 'lecture = cours magistral.', 'lecture = talk given to students.'),
+  CH2('His speech was very ___ and many people cried.', ['moving', 'emotioning'], 0, "Son discours était très émouvant et beaucoup de gens ont pleuré.", 'moving = émouvant ; emotioning n\'existe pas.', 'moving = causing strong feelings; emotioning does not exist.')
+];
 const A = SK('Faux amis essentiels', 'Essential false friends');
 const B = SK('Paires confusantes : affect / effect, principal / principle...', 'Confusing pairs: affect / effect, principal / principle...');
 export const G21 = {
@@ -131,7 +184,11 @@ export const G21 = {
     'g21-niv-c': SK('Faux amis : thème', 'False friends: translation'), 'g21-th': SK('Faux amis : thème', 'False friends: translation'),
     'g21-niv-d': SK('Faux amis : repérer et corriger', 'False friends: spotting and correcting'),
     'g21-bonus': SK('Faux amis moins connus', 'Less obvious false friends'),
-    'g21-m21b': SK('Ordre des mots', 'Word order')
+    'g21-m21b': SK('Ordre des mots', 'Word order'),
+    'g21-vf': SK('Faux amis : vrai ou faux', 'False friends: true or false'),
+    'g21-trou': SK('Faux amis moins connus', 'Less obvious false friends'),
+    'g21-spot': SK('Faux amis : repérer et corriger', 'False friends: spotting and correcting'),
+    'g21-choix': SK('Faux amis : choisir le bon mot', 'False friends: choosing the right word')
   },
   sets: [
     S('g21-guidee-a', FICHE, ['Série guidée A : faux amis en contexte', 'Guided set A: false friends in context'], 'B1', ['Complète avec le mot anglais qui correspond à la définition.', 'Complete with the English word that matches the definition.'], guideeA),
@@ -142,6 +199,10 @@ export const G21 = {
     S('g21-niv-d', FICHE, ['Niveau D : repérer les faux amis dans un texte', 'Level D: spotting false friends in a text'], 'B2', ['Corrige chaque phrase du texte.', 'Correct each sentence of the text.'], nivD),
     S('g21-bonus', FICHE, ['Bonus : faux amis moins connus', 'Bonus: less obvious false friends'], 'B2', ['Donne le sens réel, puis compare avec le modèle.', 'Give the real meaning, then compare with the model.'], bonus),
     S('g21-devoir', FICHE, ['Devoir maison', 'Homework'], 'B1+', ['Quinze phrases à compléter.', 'Fifteen sentences to complete.'], devoir),
+    S('g21-vf', FICHE, ['Vrai ou faux ?', 'True or false?'], 'B1+', ['Dis si l\'affirmation est vraie ou fausse.', 'Say whether the statement is true or false.'], vf),
+    S('g21-trou', FICHE, ['Phrases à trous : autres faux amis', 'Gap-fill: more false friends'], 'B1+', ['Complète avec le mot anglais qui correspond.', 'Complete with the matching English word.'], trou),
+    S('g21-spot', FICHE, ['Repère l\'erreur', 'Spot the error'], 'B2', ['Corrige la phrase si elle est fausse, recopie-la si elle est correcte.', 'Correct the sentence if it is wrong, copy it if it is correct.'], spot),
+    S('g21-choix', FICHE, ['Choisis le bon mot', 'Choose the right word'], 'B1+', ['Choisis le mot qui convient.', 'Choose the word that fits.'], choix),
     S('g21-m21a-1', MURPHY, ['Unité 21A : faux amis essentiels (1/2)', 'Unit 21A: essential false friends (1/2)'], 'B1', ['Choisis le bon mot anglais.', 'Choose the right English word.'], m21a1),
     S('g21-m21a-2', MURPHY, ['Unité 21A : paires confusantes (2/2)', 'Unit 21A: confusing pairs (2/2)'], 'B1+', ['Choisis le bon mot.', 'Choose the right word.'], m21a2),
     S('g21-m21b', MURPHY, ['Unité 21B : remettre les mots dans l\'ordre', 'Unit 21B: sentence building'], 'B1+', ['Écris la phrase complète avec les mots dans le bon ordre.', 'Write the complete sentence with the words in the right order.'], m21b),

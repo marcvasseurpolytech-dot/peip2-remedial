@@ -1,5 +1,6 @@
 // G15 : Phrasal verbs en contexte professionnel
-import { S, FICHE, MURPHY, T, R, W, P, K, hint, SK } from './dsl2.js';
+import { S, FICHE, MURPHY, F, OK, T, R, W, P, K, hint, SK } from './dsl2.js';
+import { ch, E } from './dsl.js';
 
 const RP = T('Remplace le groupe nominal par un pronom (it, them...).', 'Replace the noun phrase with a pronoun (it, them...).');
 const PL = T("Place l'objet entre parenthèses et réécris la phrase (plusieurs places possibles).", 'Place the object in brackets and rewrite the sentence (several positions may be possible).');
@@ -135,6 +136,69 @@ const th = [
   R("Éteignez l'imprimante avant de la déplacer.", ['Turn the printer off before moving it.', 'Turn off the printer before moving it.', 'Switch the printer off before moving it.', 'Turn the printer off before you move it.', 'Turn off the printer before you move it.'], 'turn off ; moving it : pronom après le verbe.', 'turn off.'),
   R("Elle a été la meilleure de tous les candidats.", ['She stood out from all the candidates.', 'She stood out among all the candidates.', 'She stood out among all the applicants.', 'She stood out from all the applicants.'], 'stand out = se démarquer.', 'stand out = be distinctive.')
 ];
+
+const XX = (...arrs) => arrs.reduce((a, b) => a.flatMap(x => b.map(y => x + y)), ['']);
+const CHP = (s, o, k, fr, why, whyEn) => ch(s, o, k, fr, why, E(whyEn, null, { s, o }));
+const vieA = [
+  K('I usually ___ at seven every morning. (se lever)', [['get up']], "Je me lève en général à sept heures chaque matin.", 'get up = se lever.', 'get up = leave your bed.'),
+  K('Please ___ your shoes before you come in. (retirer)', [['take off']], "Retirez vos chaussures avant d'entrer, s'il vous plaît.", 'take off = retirer (un vêtement).', 'take off = remove (clothing).'),
+  K('She ___ her old car for a newer model. (l\'a échangée contre)', [['traded in', 'part-exchanged']], "Elle a échangé sa vieille voiture contre un modèle plus récent.", 'trade in = reprendre en échange d\'un achat.', 'trade in = give an old item as part payment for a new one.'),
+  K('We ___ milk, so I went to the shop. (n\'avions plus de)', [['ran out of']], "Nous n'avions plus de lait, alors je suis allé au magasin.", 'run out of = être à court de.', 'run out of = have none left.'),
+  K('He ___ his father: they have the same laugh. (ressemble à)', [['takes after']], "Il tient de son père : ils ont le même rire.", 'take after = tenir de, ressembler à (un parent).', 'take after = resemble an older relative.'),
+  K('Can you ___ my cat while I am away? (garder)', [['look after']], "Peux-tu garder mon chat pendant mon absence ?", 'look after = s\'occuper de.', 'look after = take care of.'),
+  K('The children ___ their toys after dinner. (ont rangé)', [['tidied up', 'put away', 'cleared up']], "Les enfants ont rangé leurs jouets après le dîner.", 'tidy up / put away = ranger.', 'tidy up / put away = put things in order.'),
+  K("I'll ___ you at the station at six. (venir chercher)", [['pick up']], "Je viendrai te chercher à la gare à dix-huit heures.", 'pick up = aller chercher quelqu\'un.', 'pick up = collect someone.'),
+  K('She ___ smoking last year. (a arrêté)', [['gave up']], "Elle a arrêté de fumer l'an dernier.", 'give up = abandonner, arrêter.', 'give up = stop doing something.'),
+  K('Remember to ___ the lights when you leave. (éteindre)', [['turn off', 'switch off', 'put out']], "N'oublie pas d'éteindre les lumières en partant.", 'turn off / switch off = éteindre.', 'turn off / switch off = stop a light or machine.'),
+  K('My flight ___ at six in the morning. (décolle)', [['takes off']], "Mon vol décolle à six heures du matin.", 'take off = décoller.', 'take off = leave the ground.'),
+  K('We ___ a lovely little café on holiday. (sommes tombés par hasard sur)', [['came across', 'ran across', 'stumbled across', 'stumbled upon']], "Nous sommes tombés par hasard sur un charmant petit café pendant les vacances.", 'come across = trouver par hasard.', 'come across = find by chance.')
+];
+const vieB = [
+  CHP('The car broke ___ on the motorway.', ['up', 'down'], 1, "La voiture est tombée en panne sur l'autoroute.", 'break down = tomber en panne.', 'break down = stop working.'),
+  CHP("I'm looking ___ to the weekend.", ['forward', 'ahead'], 0, "J'ai hâte d'être au week-end.", 'look forward to = avoir hâte de.', 'look forward to = wait with pleasure for.'),
+  CHP('She turned ___ the invitation to the party.', ['down', 'over'], 0, "Elle a décliné l'invitation à la fête.", 'turn down = refuser.', 'turn down = refuse.'),
+  CHP("Hurry ___, we'll miss the bus!", ['on', 'up'], 1, "Dépêche-toi, nous allons rater le bus !", 'hurry up = se dépêcher.', 'hurry up = go faster.'),
+  CHP('He grew ___ in a small village near the sea.', ['up', 'out'], 0, "Il a grandi dans un petit village près de la mer.", 'grow up = grandir.', 'grow up = become an adult.'),
+  CHP('They split ___ after five years together.', ['up', 'off'], 0, "Ils se sont séparés après cinq ans de vie commune.", 'split up = se séparer.', 'split up = end a relationship.'),
+  CHP('Please fill ___ this form in capital letters.', ['over', 'in'], 1, "Remplissez ce formulaire en majuscules, s'il vous plaît.", 'fill in = remplir (un formulaire).', 'fill in = complete a form.'),
+  CHP("I can't put ___ with this noise any longer.", ['up', 'on'], 0, "Je ne supporte plus ce bruit.", 'put up with = supporter (trois éléments).', 'put up with = tolerate (three-part verb).'),
+  CHP('The alarm went ___ at six.', ['away', 'off'], 1, "Le réveil a sonné à six heures.", 'go off = sonner.', 'go off = start ringing.'),
+  CHP('She dropped her son ___ at school on her way to work.', ['off', 'out'], 0, "Elle a déposé son fils à l'école en allant travailler.", 'drop off = déposer quelqu\'un.', 'drop off = leave someone somewhere.'),
+  CHP('Try ___ the jacket before you buy it.', ['up', 'on'], 1, "Essaie la veste avant de l'acheter.", 'try on = essayer (un vêtement).', 'try on = wear something to check the fit.'),
+  CHP('He ran ___ his old teacher in the town centre.', ['into', 'off'], 0, "Il est tombé sur son ancien professeur au centre-ville.", 'run into = rencontrer par hasard.', 'run into = meet by chance.')
+];
+const vieC = [
+  RP('She tried on the dress.', ['She tried it on.'], "Elle l'a essayée.", SEP, SEPE),
+  RP('He picked up his daughter at school.', ['He picked her up at school.'], "Il est allé la chercher à l'école.", SEP, SEPE),
+  RP('They threw away the old magazines.', ['They threw them away.'], "Ils les ont jetés.", SEP, SEPE),
+  RP("I'll write down the address.", ["I'll write it down.", 'I will write it down.'], "Je la noterai.", SEP, SEPE),
+  RP('Please switch on the heating.', ['Please switch it on.'], "Allumez-le, s'il vous plaît.", SEP, SEPE),
+  RP('He gave back the keys.', ['He gave them back.'], "Il les a rendues.", SEP, SEPE),
+  RP('She looked after her grandmother.', ['She looked after her.'], "Elle s'est occupée d'elle.", 'look after est inséparable : le pronom vient après la particule.', 'look after is inseparable: the pronoun comes after the particle.'),
+  RP('We put away the groceries.', ['We put them away.'], "Nous les avons rangées.", SEP, SEPE)
+];
+const vieD = [
+  F('He picked up it from the floor.', ['He picked it up from the floor.'], "Il l'a ramassé par terre.", SEP, SEPE),
+  F("I'm looking forward to see you.", ["I'm looking forward to seeing you.", 'I am looking forward to seeing you.'], "J'ai hâte de te voir.", 'look forward to : to est une préposition, donc le verbe suivant prend -ing.', 'look forward to: to is a preposition, so the next verb takes -ing.'),
+  OK('They called off the match because of the rain.', "Ils ont annulé le match à cause de la pluie.", 'call off = annuler : phrase correcte.', 'call off = cancel: the sentence is correct.'),
+  F('We ran out the sugar.', ['We ran out of sugar.', 'We ran out of the sugar.'], "Nous n'avions plus de sucre.", 'run out of : il faut of devant le nom.', 'run out of: of is required before the noun.'),
+  F('She gets on very good with her neighbours.', ['She gets on very well with her neighbours.', 'She gets along very well with her neighbours.', 'She gets on really well with her neighbours.'], "Elle s'entend très bien avec ses voisins.", 'Après un verbe, on emploie l\'adverbe well, pas l\'adjectif good.', 'After a verb, use the adverb well, not the adjective good.'),
+  OK('Turn the lights off, please.', "Éteignez les lumières, s'il vous plaît.", 'turn off est séparable : phrase correcte.', 'turn off is separable: the sentence is correct.'),
+  F('He gave up to smoke last year.', ['He gave up smoking last year.'], "Il a arrêté de fumer l'an dernier.", 'give up est suivi de -ing.', 'give up is followed by -ing.'),
+  F("I can't put up it any longer.", ["I can't put up with it any longer.", 'I cannot put up with it any longer.'], "Je ne le supporte plus.", 'put up with est un verbe à trois éléments : with est obligatoire.', 'put up with is a three-part verb: with is required.'),
+  F('The plane took of at noon.', ['The plane took off at noon.'], "L'avion a décollé à midi.", 'take off : off prend deux f.', 'take off: off has two f.'),
+  F("I'll pick up you at eight.", ["I'll pick you up at eight.", 'I will pick you up at eight.'], "Je viendrai te chercher à huit heures.", SEP, SEPE)
+];
+const vieE = [
+  R("Je m'entends très bien avec mes voisins.", XX(['I get on ', 'I get along '], ['very well ', 'really well ', 'well '], ['with my neighbours.', 'with my neighbors.'])),
+  R("Il a fini par abandonner le piano.", XX(['He eventually gave up ', 'He finally gave up ', 'In the end he gave up ', 'In the end, he gave up '], ['the piano.', 'playing the piano.'])),
+  R("Peux-tu t'occuper de mon chien ce week-end ?", XX(['Can you ', 'Could you ', 'Would you '], ['look after ', 'take care of '], ['my dog '], ['this weekend?', 'at the weekend?', 'over the weekend?', 'this weekend, please?']), 'look after = s\'occuper de.', 'look after = take care of.'),
+  R("L'avion décolle à six heures.", ['The plane takes off at six.', 'The plane takes off at 6.', "The plane's taking off at six.", 'The plane is taking off at six.', 'The flight takes off at six.', 'The flight takes off at 6.'], 'take off = décoller.', 'take off = leave the ground.'),
+  R("J'ai croisé un vieil ami en ville.", XX(['I ran into ', 'I bumped into ', 'I came across ', 'I ran across '], ['an old friend '], ['in town.', 'in the town centre.', 'in the town center.', 'in the city centre.', 'in the city center.', 'downtown.'])),
+  R("Remplis ce formulaire et rends-le demain.", XX(['Fill in ', 'Fill out ', 'Complete '], ['this form and '], ['hand it in ', 'give it back ', 'return it ', 'turn it in ', 'bring it back '], ['tomorrow.'])),
+  R("On a fini par manquer de lait.", XX(['We ran out of ', 'We have run out of ', 'We ran short of '], ['milk.'])),
+  R("Elle a grandi à la campagne.", XX(['She grew up in the '], ['countryside.', 'country.']))
+];
 const A = SK('Sens des phrasal verbs professionnels', 'Meaning of workplace phrasal verbs');
 const B = SK('Position de l\'objet : séparable ou inséparable', 'Object position: separable or inseparable');
 export const G15 = {
@@ -148,7 +212,12 @@ export const G15 = {
     'g15-m15b': SK('Phrasal verbs à trois éléments', 'Three-part phrasal verbs'),
     'g15-niv-c': SK('Phrasal verbs : thème', 'Phrasal verbs: translation'), 'g15-th': SK('Phrasal verbs : thème', 'Phrasal verbs: translation'),
     'g15-niv-d': SK('Phrasal verbs : production écrite', 'Phrasal verbs: written production'),
-    'g15-bonus': SK('Phrasal verbs idiomatiques', 'Idiomatic phrasal verbs')
+    'g15-bonus': SK('Phrasal verbs idiomatiques', 'Idiomatic phrasal verbs'),
+    'g15-vie-a': SK('Phrasal verbs de la vie quotidienne', 'Everyday phrasal verbs'),
+    'g15-vie-b': SK('Phrasal verbs du quotidien : choix de la particule', 'Everyday phrasal verbs: choosing the particle'),
+    'g15-vie-c': B,
+    'g15-vie-d': SK('Phrasal verbs du quotidien : repérer et corriger', 'Everyday phrasal verbs: spotting and correcting'),
+    'g15-vie-e': SK('Phrasal verbs du quotidien : thème', 'Everyday phrasal verbs: translation')
   },
   sets: [
     S('g15-guidee-a', FICHE, ['Série guidée A : sens', 'Guided set A: meaning'], 'B1', ['Complète avec le phrasal verb au bon temps.', 'Complete with the phrasal verb in the right tense.'], guideeA),
@@ -159,6 +228,11 @@ export const G15 = {
     S('g15-niv-d', FICHE, ['Niveau D : courriel professionnel', 'Level D: professional email'], 'B2', ['Rédige, puis compare avec le modèle.', 'Write, then compare with the model.'], nivD),
     S('g15-bonus', FICHE, ['Bonus : phrasal verbs idiomatiques', 'Bonus: idiomatic phrasal verbs'], 'B2', ['Devine le sens, puis compare avec le modèle.', 'Guess the meaning, then compare with the model.'], bonus),
     S('g15-devoir', FICHE, ['Devoir maison', 'Homework'], 'B1+', ['Quinze phrases à compléter avec le bon phrasal verb.', 'Fifteen sentences to complete with the right phrasal verb.'], devoir),
+    S('g15-vie-a', FICHE, ['Vie quotidienne A : sens', 'Everyday life A: meaning'], 'B1', ['Complète avec le phrasal verb qui correspond à la traduction.', 'Complete with the phrasal verb that matches the translation.'], vieA),
+    S('g15-vie-b', FICHE, ['Vie quotidienne B : la bonne particule', 'Everyday life B: the right particle'], 'B1', ['Choisis la particule qui convient.', 'Choose the particle that fits.'], vieB),
+    S('g15-vie-c', FICHE, ['Vie quotidienne C : remplacer par un pronom', 'Everyday life C: replacing with a pronoun'], 'B1+', ['Remplace le groupe nominal par un pronom.', 'Replace the noun phrase with a pronoun.'], vieC),
+    S('g15-vie-d', FICHE, ['Vie quotidienne D : repérer l\'erreur', 'Everyday life D: spot the error'], 'B1+', ['Corrige la phrase si elle est fausse, recopie-la si elle est correcte.', 'Correct the sentence if it is wrong, copy it if it is correct.'], vieD),
+    S('g15-vie-e', FICHE, ['Vie quotidienne E : thème', 'Everyday life E: translation'], 'B1+', ['Traduis en anglais, puis compare avec le modèle.', 'Translate into English, then compare with the model.'], vieE),
     S('g15-m15a-1', MURPHY, ['Unité 15A : position de l\'objet (1/2)', 'Unit 15A: position of the object (1/2)'], 'B1+', ['Place l\'objet et réécris la phrase.', 'Place the object and rewrite the sentence.'], m15a1),
     S('g15-m15a-2', MURPHY, ['Unité 15A : particule (2/2)', 'Unit 15A: particle (2/2)'], 'B1', ['Complète avec la bonne particule.', 'Complete with the right particle.'], m15a2),
     S('g15-m15b', MURPHY, ['Unité 15B : phrasal verbs à trois éléments', 'Unit 15B: three-part phrasal verbs'], 'B1+', ['Complète avec les deux particules.', 'Complete with the two particles.'], m15b),
