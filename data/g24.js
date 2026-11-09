@@ -169,6 +169,121 @@ const theme2 = [
   R("À condition que le test de charge réussisse, le site sera mis en production vendredi.", X(['Provided that ', 'Provided ', 'Providing that ', 'Providing ', 'As long as '], ['the load test '], ['succeeds, ', 'passes, ', 'is successful, '], ['the site will go live ', 'the site will go into production ', 'the site will be put into production ', 'the website will go live '], ['on Friday.', 'on Friday'])),
   R("Fais la mesure comme indiqué dans le protocole.", X(['Take ', 'Do ', 'Make '], ['the measurement '], ['as indicated ', 'as described ', 'as specified ', 'as stated '], ['in the protocol.', 'in the procedure.']))
 ];
+const WHY2 = {
+  'when': ['when = quand : relie deux moments.', 'when links two moments.'],
+  'however': ['however = cependant : oppose deux phrases.', 'however contrasts two sentences.'],
+  'nevertheless': ['nevertheless = néanmoins : oppose deux phrases, plus formel.', 'nevertheless contrasts two sentences, in a more formal way.'],
+  'despite': ['despite / in spite of + nom ou -ing : concession.', 'despite / in spite of + noun or -ing expresses concession.'],
+  'due to': ['due to / because of + nom : cause.', 'due to / because of + noun expresses cause.'],
+  'in addition': ['in addition (to) = de plus, en plus de : ajout.', 'in addition (to) adds information.'],
+  'in order to': ['in order to + base verbale : but.', 'in order to + base verb expresses purpose.'],
+  'therefore': ['therefore = donc, par conséquent : conséquence.', 'therefore expresses a result.'],
+  'as well as': ['as well as = ainsi que : ajout.', 'as well as adds an item.'],
+  'during': ['during + nom : pendant la durée de.', 'during + noun = throughout the period of.'],
+  'such as': ['such as = comme, tel que : exemple.', 'such as introduces an example.'],
+  'otherwise': ['otherwise = sinon : résultat si la condition n\'est pas remplie.', 'otherwise gives the result if the condition is not met.'],
+  'as a result': ['as a result (of) = par suite de : conséquence.', 'as a result (of) expresses consequence.'],
+  'on the contrary': ['on the contrary = au contraire : contredit ce qui précède.', 'on the contrary contradicts what was just said.'],
+  'at least': ['at least = au moins : point positif minimal.', 'at least gives a minimal positive point.'],
+  'in the meantime': ['in the meantime = en attendant, pendant ce temps.', 'in the meantime = while waiting.'],
+  'including': ['including = y compris : membres d\'un ensemble.', 'including introduces members of a set.'],
+  'as long as': ['as long as = tant que, pourvu que : condition.', 'as long as sets a condition.'],
+  'then': ['then = puis : séquence.', 'then marks the next step.'],
+  'so': ['so = donc : conséquence.', 'so expresses a result.'],
+  'which': ['which : pronom relatif pour une chose.', 'which is the relative pronoun for things.'],
+  'on one hand': ['on one hand ... on the other hand : deux aspects opposés.', 'on one hand ... on the other hand: two contrasting aspects.'],
+  'either': ['either ... or : soit ... soit.', 'either ... or presents two alternatives.'],
+  'neither2': ['neither ... nor : ni ... ni.', 'neither ... nor links two negative items.'],
+  'although2': ['although = bien que : contraste.', 'although introduces a contrast.'],
+  'whereas2': ['whereas / while = alors que : oppose deux faits.', 'whereas / while contrasts two facts.'],
+  'because2': ['because = parce que : cause.', 'because gives the reason.'],
+  'in case2': ['in case = au cas où : précaution.', 'in case expresses a precaution.'],
+  'while2': ['while / when / as : deux actions simultanées.', 'while / when / as link simultaneous actions.'],
+  'unless2': ['unless = à moins que : if not.', 'unless means if not.'],
+  'so that2': ['so that = afin que : but.', 'so that expresses purpose.'],
+  'both': ['both ... and : les deux à la fois.', 'both ... and joins two items.']
+};
+const CK = (s, a, fr, ...keys) => K(s, a, fr, keys.map(k => WHY2[k][0]).join(' '), keys.map(k => WHY2[k][1]).join(' '));
+const conA = [
+  CK('___ Dad comes home from work, he has to lie down on the sofa ___ he is tired.', [['when', 'whenever', 'as soon as', 'once'], ['because', 'as', 'since']], "Quand papa rentre du travail, il doit s'allonger sur le canapé parce qu'il est fatigué.", 'when', 'because2'),
+  CK("Jerry had a bad headache yesterday, ___ he couldn't come to football practice.", [['so']], "Jerry avait un violent mal de tête hier, donc il n'a pas pu venir à l'entraînement de football.", 'so'),
+  CK("This is Jimmy's new mountain bike, ___ he got from his parents. He locks it up every evening ___ nobody can steal it.", [['which'], ['so that']], "Voici le nouveau VTT de Jimmy, que ses parents lui ont offert. Il l'attache chaque soir pour que personne ne puisse le voler.", 'which', 'so that2'),
+  CK('___ Samantha was tired, she watched TV until well after midnight.', [['although', 'though', 'even though']], "Bien que Samantha fût fatiguée, elle a regardé la télévision jusqu'à bien après minuit.", 'although2'),
+  CK('First, cut out the pictures, ___ paste them into your book.', [['then', 'and then']], "D'abord, découpez les images, puis collez-les dans votre cahier.", 'then'),
+  CK("I would like to learn Chinese. ___, I don't know anyone who can teach me.", [['however']], "J'aimerais apprendre le chinois. Cependant, je ne connais personne qui puisse me l'enseigner.", 'however'),
+  CK('___ we were driving through the countryside, we saw many picturesque villages.', [['while', 'when', 'as']], "Pendant que nous traversions la campagne en voiture, nous avons vu de nombreux villages pittoresques.", 'while2'),
+  CK('The Hemingways are our neighbours ___ our friends.', [['as well as']], "Les Hemingway sont nos voisins ainsi que nos amis.", 'as well as'),
+  CK('You can have ___ tea ___ coffee for breakfast. What would you like?', [['either'], ['or']], "Au petit-déjeuner, tu peux prendre soit du thé soit du café. Que souhaites-tu ?", 'either'),
+  CK('___ being a great skier, he is known by few people outside Europe.', [['despite', 'in spite of']], "Bien qu'il soit un excellent skieur, peu de gens le connaissent en dehors de l'Europe.", 'despite'),
+  CK('___ the hike up the mountains we saw a lot of deer.', [['during']], "Pendant la randonnée en montagne, nous avons vu beaucoup de cerfs.", 'during'),
+  CK("___ you finish the essay by tomorrow, you won't be able to get a good mark.", [['unless']], "À moins de finir la dissertation d'ici demain, tu ne pourras pas obtenir une bonne note.", 'unless2'),
+  CK('___ my father ___ my mother will be able to attend the meeting tomorrow.', [['neither'], ['nor']], "Ni mon père ni ma mère ne pourront assister à la réunion demain.", 'neither2'),
+  CK('He likes all kinds of sports, ___ skiing, hockey and volleyball.', [['such as', 'including', 'like']], "Il aime toutes sortes de sports, comme le ski, le hockey et le volley-ball.", 'such as')
+];
+const conB = [
+  CK('___ we were driving through the Lake District, we saw many picturesque villages.', [['while', 'when', 'as']], "Pendant que nous traversions le Lake District, nous avons vu de nombreux villages pittoresques.", 'while2'),
+  CK('___ having lost only one match this season, we did not win the championship.', [['despite', 'in spite of']], "Bien que nous n'ayons perdu qu'un seul match cette saison, nous n'avons pas gagné le championnat.", 'despite'),
+  CK('Flight attendants who apply for a job must be able to speak ___ English and Spanish.', [['both']], "Les hôtesses de l'air qui postulent doivent savoir parler à la fois anglais et espagnol.", 'both'),
+  CK('I started learning Chinese ___ my stay in the Far East.', [['during']], "J'ai commencé à apprendre le chinois pendant mon séjour en Extrême-Orient.", 'during'),
+  CK('The firm moved to Leeds ___ it could be closer to its clients.', [['so that']], "L'entreprise a déménagé à Leeds afin d'être plus proche de ses clients.", 'so that2'),
+  CK('She gets up early ___ be in time for work.', [['in order to', 'so as to']], "Elle se lève tôt afin d'arriver à l'heure au travail.", 'in order to'),
+  CK("The climate in South Africa is perfect. It's ___ too hot ___ too cold.", [['neither'], ['nor']], "Le climat en Afrique du Sud est parfait. Il n'y fait ni trop chaud ni trop froid.", 'neither2'),
+  CK('This cell phone tariff costs 8 cents per minute, ___ the other one offers a flat rate.', [['whereas', 'while']], "Ce forfait mobile coûte 8 centimes la minute, alors que l'autre propose un tarif forfaitaire.", 'whereas2'),
+  CK('___ my father likes country music, he rarely listens to it on the radio.', [['although', 'even though', 'though', 'while']], "Bien que mon père aime la musique country, il l'écoute rarement à la radio.", 'although2'),
+  CK('___ to the six air bags, the car also has a built-in security system.', [['in addition']], "En plus des six airbags, la voiture dispose aussi d'un système de sécurité intégré.", 'in addition'),
+  CK('The company manufactures cars ___ motorcycles.', [['as well as']], "L'entreprise fabrique des voitures ainsi que des motos.", 'as well as'),
+  CK("___ we hadn't eaten for over twelve hours, we weren't very hungry.", [['even though', 'although', 'though']], "Même si nous n'avions rien mangé depuis plus de douze heures, nous n'avions pas très faim.", 'although2'),
+  CK("My sister invited me to her party. ___, I was so busy I had to tell her I couldn't come.", [['however']], "Ma sœur m'a invité à sa fête. Cependant, j'étais si occupé que j'ai dû lui dire que je ne pouvais pas venir.", 'however'),
+  CK('I arrived late for the performance ___ a traffic jam on the motorway.', [['due to', 'because of', 'owing to']], "Je suis arrivé en retard au spectacle à cause d'un embouteillage sur l'autoroute.", 'due to'),
+  CK("He spent most of his time playing with his friends. ___, he wasn't well prepared for the exam.", [['therefore', 'as a result', 'consequently']], "Il a passé le plus clair de son temps à jouer avec ses amis. Par conséquent, il n'était pas bien préparé pour l'examen.", 'therefore')
+];
+const conC = [
+  CK('Sea levels will probably rise in the next few decades ___ of global warming.', [['as a result']], "Le niveau des mers va probablement monter dans les prochaines décennies à cause du réchauffement climatique.", 'as a result'),
+  CK('I hope he drives carefully, ___ he may have problems on such a slippery road.', [['otherwise']], "J'espère qu'il conduit prudemment, sinon il pourrait avoir des problèmes sur une route aussi glissante.", 'otherwise'),
+  CK('The president was not a very popular leader. ___, his resignation did not come as a surprise.', [['therefore', 'as a result']], "Le président n'était pas un dirigeant très populaire. Sa démission n'a donc pas surpris.", 'therefore'),
+  CK('Our economy will not improve this year. ___, all projections show that it will get worse.', [['on the contrary']], "Notre économie ne s'améliorera pas cette année. Au contraire, toutes les projections montrent qu'elle va empirer.", 'on the contrary'),
+  CK('The couple broke up a few days ago. ___, they are still living together because of the children.', [['however', 'nevertheless']], "Le couple s'est séparé il y a quelques jours. Cependant, ils vivent encore ensemble à cause des enfants.", 'however'),
+  CK('___ it was a wonderful place to go skiing, not many tourists found their way there.', [['although', 'though', 'even though']], "Bien que ce soit un endroit merveilleux pour skier, peu de touristes y venaient.", 'although2'),
+  CK('The scientist studied the behaviour of various animals, ___ whales and dolphins.', [['including']], "Le scientifique a étudié le comportement de divers animaux, y compris les baleines et les dauphins.", 'including'),
+  CK('___ we have to fight against environmental problems, but ___ we need more and more energy every day.', [['on one hand', 'on the one hand'], ['on the other hand']], "D'un côté nous devons lutter contre les problèmes environnementaux, mais de l'autre nous avons besoin de toujours plus d'énergie.", 'on one hand'),
+  CK("I think he's asleep. ___ his eyes are closed.", [['at least']], "Je crois qu'il dort. Du moins, il a les yeux fermés.", 'at least'),
+  CK("The candidate didn't quite meet the necessary requirements. ___, he failed.", [['therefore', 'as a result', 'in other words']], "Le candidat ne remplissait pas tout à fait les conditions requises. Par conséquent, il a échoué.", 'therefore'),
+  CK('Please take some warm clothes with you, just ___ it gets cold at night.', [['in case']], "Emportez des vêtements chauds, au cas où il ferait froid la nuit.", 'in case2'),
+  CK("The report will be finished soon. ___, let's get some coffee.", [['in the meantime']], "Le rapport sera bientôt terminé. En attendant, allons prendre un café.", 'in the meantime')
+];
+const conD = [
+  CK("Take your camera with you, just ___ mine doesn't work.", [['in case']], "Prends ton appareil photo, au cas où le mien ne fonctionnerait pas.", 'in case2'),
+  CK('___ having muscle problems, the defender was able to play.', [['despite', 'in spite of']], "Malgré ses problèmes musculaires, le défenseur a pu jouer.", 'despite'),
+  CK('Bring an umbrella with you ___ it rains tomorrow.', [['in case']], "Prends un parapluie au cas où il pleuvrait demain.", 'in case2'),
+  CK('Skiing is a safe sport ___ you obey the rules on the slope.', [['as long as', 'provided that', 'providing that', 'provided', 'providing']], "Le ski est un sport sûr tant que l'on respecte les règles sur la piste.", 'as long as'),
+  CK('All flights to and from London have been cancelled ___ fog.', [['due to', 'because of', 'owing to']], "Tous les vols à destination et au départ de Londres ont été annulés à cause du brouillard.", 'due to'),
+  CK('They arrived in time for the meeting ___ having to travel in bad weather.', [['despite', 'in spite of']], "Ils sont arrivés à temps pour la réunion malgré un voyage par mauvais temps.", 'despite'),
+  CK('I like travelling by underground, ___ it gets pretty crowded during rush hours.', [['even though', 'although', 'though']], "J'aime voyager en métro, même s'il est assez bondé aux heures de pointe.", 'although2'),
+  CK('She has been living in the country her whole life. ___, she has decided she wants a change and plans on moving to the city.', [['nevertheless', 'however', 'nonetheless']], "Elle a toujours vécu à la campagne. Néanmoins, elle a décidé de changer et prévoit de s'installer en ville.", 'nevertheless'),
+  CK("We had a wonderful time in Barcelona. ___, transport workers were on strike, so we couldn't use the underground.", [['however']], "Nous avons passé un merveilleux séjour à Barcelone. Cependant, les employés des transports étaient en grève et nous n'avons pas pu prendre le métro.", 'however'),
+  CK('___ life was hard during the war, we managed to survive.', [['even though', 'although', 'though']], "Même si la vie était dure pendant la guerre, nous avons réussi à survivre.", 'although2'),
+  CK("___ heavy traffic on the motorway, we couldn't make it in time.", [['due to', 'because of', 'owing to']], "À cause de la circulation dense sur l'autoroute, nous n'avons pas pu arriver à temps.", 'due to'),
+  CK('___ the low temperatures during the winter, Moscow is always worth visiting.', [['in spite of', 'despite']], "Malgré les basses températures de l'hiver, Moscou vaut toujours le détour.", 'despite'),
+  CK("I can't come now ___ the children are ill, and I have to look after them.", [['because', 'since', 'as']], "Je ne peux pas venir maintenant parce que les enfants sont malades et que je dois m'occuper d'eux.", 'because2'),
+  CK('The economy collapsed. ___, the government had to resign.', [['therefore', 'as a result', 'consequently']], "L'économie s'est effondrée. Par conséquent, le gouvernement a dû démissionner.", 'therefore'),
+  CK('You may go out with your friends tonight, ___ you never go alone and stay with them all the time.', [['as long as', 'provided that', 'providing that', 'provided', 'providing']], "Tu peux sortir avec tes amis ce soir, à condition de ne jamais être seul et de rester avec eux tout le temps.", 'as long as'),
+  CK('I already knew a lot about cybersecurity. ___, the lecture was quite interesting.', [['nevertheless', 'however', 'nonetheless']], "Je connaissais déjà beaucoup de choses sur la cybersécurité. Néanmoins, la conférence était assez intéressante.", 'nevertheless')
+];
+const conE = [
+  CHX('The match was cancelled ___ bad weather.', ['due to', 'despite'], 0, "Le match a été annulé à cause du mauvais temps.", WHY2['due to']),
+  CHX('She trained every day ___ win the national title.', ['in order to', 'according to'], 0, "Elle s'entraînait tous les jours afin de remporter le titre national.", WHY2['in order to']),
+  CHX('The prices went up; ___, sales fell.', ['therefore', 'however'], 0, "Les prix ont augmenté ; par conséquent, les ventes ont baissé.", WHY2['therefore']),
+  CHX('The hotel was cheap; ___, the service was excellent.', ['therefore', 'in addition'], 1, "L'hôtel était bon marché ; de plus, le service était excellent.", WHY2['in addition']),
+  CHX('He is neither a doctor ___ a nurse.', ['or', 'nor'], 1, "Il n'est ni médecin ni infirmier.", WHY2.neither2),
+  CHX('The old printer is slow, ___ the new one is very fast.', ['whereas', 'because'], 0, "L'ancienne imprimante est lente, alors que la nouvelle est très rapide.", WHY2.whereas2),
+  CHX('We met ___ the conference in Lyon.', ['while', 'during'], 1, "Nous nous sommes rencontrés pendant la conférence à Lyon.", WHY2.during),
+  CHX('___ the weather was awful, the festival went ahead.', ['Even though', 'Unless'], 0, "Même si le temps était épouvantable, le festival a eu lieu.", WHY['even though']),
+  CHX('They left early ___ avoid the traffic.', ['in order to', 'so that'], 0, "Ils sont partis tôt afin d'éviter la circulation.", WHY2['in order to']),
+  CHX('He speaks Italian ___ French and Spanish.', ['as well as', 'as soon as'], 0, "Il parle italien ainsi que français et espagnol.", WHY2['as well as']),
+  CHX('The test was hard; ___, everyone passed.', ['however', 'so'], 0, "Le test était difficile ; cependant, tout le monde l'a réussi.", WHY2.however),
+  CHX('I like fruit ___ apples and pears.', ['such as', 'as well'], 0, "J'aime les fruits comme les pommes et les poires.", WHY2['such as'])
+];
+
 const skA = SK('Choisir le bon connecteur', 'Choosing the right connector');
 const skS = SK('Connecteurs : thème', 'Connectors: translation');
 export const G24 = {
@@ -182,7 +297,12 @@ export const G24 = {
     'g24-niv-c': skS, 'g24-th': skS, 'g24-theme-1': skS, 'g24-theme-2': skS,
     'g24-niv-d': SK('Connecteurs : repérer et corriger', 'Connectors: spotting and correcting'),
     'g24-bonus': SK('Relier des phrases', 'Joining sentences'),
-    'g24-m24b': SK('Ordre des mots', 'Word order')
+    'g24-m24b': SK('Ordre des mots', 'Word order'),
+    'g24-con-a': SK('Connecteurs complémentaires : phrases à compléter', 'Extra connectors: gap-fill'),
+    'g24-con-b': SK('Connecteurs complémentaires : phrases à compléter', 'Extra connectors: gap-fill'),
+    'g24-con-c': SK('Connecteurs complémentaires : phrases à compléter', 'Extra connectors: gap-fill'),
+    'g24-con-d': SK('Connecteurs complémentaires : phrases à compléter', 'Extra connectors: gap-fill'),
+    'g24-con-e': SK('Connecteurs : choix du bon mot', 'Connectors: choosing the right word')
   },
   sets: [
     S('g24-guidee-a', FICHE, ['Série guidée A : choisis le bon mot', 'Guided set A: choose the right word'], 'B1', ['Choisis le connecteur qui convient.', 'Choose the connector that fits.'], guideeA),
@@ -195,6 +315,11 @@ export const G24 = {
     S('g24-devoir', FICHE, ['Devoir maison', 'Homework'], 'B1+', ['Quinze phrases : choisis le bon mot.', 'Fifteen sentences: choose the right word.'], devoir),
     S('g24-theme-1', FICHE, ['Thème 1 : traduis en anglais', 'Translation 1: into English'], 'B1+', ['Traduis, puis compare avec le modèle.', 'Translate, then compare with the model.'], theme1),
     S('g24-theme-2', FICHE, ['Thème 2 : traduis en anglais', 'Translation 2: into English'], 'B2', ['Traduis, puis compare avec le modèle.', 'Translate, then compare with the model.'], theme2),
+    S('g24-con-a', FICHE, ['Complément A : connecteurs à compléter', 'Extra A: connectors to complete'], 'B2', ['Complète avec le connecteur qui convient.', 'Complete with the right connector.'], conA),
+    S('g24-con-b', FICHE, ['Complément B : connecteurs à compléter', 'Extra B: connectors to complete'], 'B2', ['Complète avec le connecteur qui convient.', 'Complete with the right connector.'], conB),
+    S('g24-con-c', FICHE, ['Complément C : connecteurs à compléter', 'Extra C: connectors to complete'], 'B2', ['Complète avec le connecteur qui convient.', 'Complete with the right connector.'], conC),
+    S('g24-con-d', FICHE, ['Complément D : connecteurs à compléter', 'Extra D: connectors to complete'], 'B2', ['Complète avec le connecteur qui convient.', 'Complete with the right connector.'], conD),
+    S('g24-con-e', FICHE, ['Complément E : choisis le bon connecteur', 'Extra E: choose the right connector'], 'B1+', ['Choisis le connecteur qui convient.', 'Choose the connector that fits.'], conE),
     S('g24-m24a-1', MURPHY, ['Unité 24A : révision des connecteurs (1/2)', 'Unit 24A: connector review (1/2)'], 'B1', ['Choisis le bon mot.', 'Choose the right word.'], m24a1),
     S('g24-m24a-2', MURPHY, ['Unité 24A : révision des connecteurs (2/2)', 'Unit 24A: connector review (2/2)'], 'B1+', ['Choisis le bon mot.', 'Choose the right word.'], m24a2),
     S('g24-m24b', MURPHY, ['Unité 24B : remettre les mots dans l\'ordre', 'Unit 24B: sentence building'], 'B1+', ['Écris la phrase complète avec les mots dans le bon ordre.', 'Write the complete sentence with the words in the right order.'], m24b),

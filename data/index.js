@@ -22,10 +22,11 @@ import { G20 } from './g20.js';
 import { G21 } from './g21.js';
 import { G23 } from './g23.js';
 import { G24 } from './g24.js';
+import { G25 } from './g25.js';
 import { G22 } from './g22.js';
 import { WH } from './wh.js';
 
-export const CHAPTERS = [G01, G02, G03, G04, G05, G06, G07, G08, G09, G10, G11, G12, G13, G14, G15, G16, G17, G18, G19, G20, G21, G22, G23, G24, WH];
+export const CHAPTERS = [G01, G02, G03, G04, G05, G06, G07, G08, G09, G10, G11, G12, G13, G14, G15, G16, G17, G18, G19, G20, G21, G22, G23, G24, G25, WH];
 
 // Textes anglais par chapitre (même ordre d'items que le chapitre français).
 const EN = { G01: G01_EN };
