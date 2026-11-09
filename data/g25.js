@@ -194,6 +194,20 @@ export const G25 = {
         uses: ['Le pronom objet peut disparaître dans une relative déterminative : the film we saw.']
       },
       {
+        title: 'Pourquoi whom et to whom ? Un reste de déclinaison',
+        forms: [
+          ['langue flexionnelle', 'une langue où la fin du mot change selon sa fonction (sujet, objet, possession) : latin, allemand, russe'],
+          ['vieil anglais (avant 1100 environ)', 'langue flexionnelle : hwā (sujet), hwǣm (datif, complément), hwæs (possession)'],
+          ['anglais moderne', 'presque toutes les terminaisons ont disparu : l\'ordre des mots et les prépositions les remplacent'],
+          ['who / whom / whose', 'ce qui reste : sujet / complément (-m, ancienne marque du datif) / possession']
+        ],
+        uses: [
+          'Comme he / him et I / me, who / whom est un fossile de la déclinaison : who est la forme sujet, whom la forme complément.',
+          'Après une préposition, le pronom est un complément, donc whom : the woman to whom I spoke. Le français garde la même logique (à qui, avec lesquels).',
+          'À l\'oral et à l\'écrit courant, la préposition passe à la fin et whom devient who ou disparaît : the woman who I spoke to, the woman I spoke to. To whom reste le registre formel.'
+        ]
+      },
+      {
         title: 'Déterminative ou non déterminative',
         forms: [
           ['sans virgule', 'information essentielle : that est possible'],
@@ -221,6 +235,20 @@ export const G25 = {
             ['where / when / why', 'place / time / reason']
           ],
           uses: ['The object pronoun may be left out in a defining clause: the film we saw.']
+        },
+        {
+          title: 'Why whom and to whom? A leftover of case endings',
+          forms: [
+            ['inflected language', 'a language where word endings change with the word\'s function (subject, object, possession): Latin, German, Russian'],
+            ['Old English (before about 1100)', 'an inflected language: hwā (subject), hwǣm (dative, object), hwæs (possession)'],
+            ['Modern English', 'nearly all endings have disappeared: word order and prepositions do the work'],
+            ['who / whom / whose', 'what remains: subject / object (-m, the old dative mark) / possession']
+          ],
+          uses: [
+            'Like he / him and I / me, who / whom is a fossil of the case system: who is the subject form, whom the object form.',
+            'After a preposition the pronoun is an object, so whom is required: the woman to whom I spoke. French follows the same logic with its own forms.',
+            'In everyday speech and writing the preposition moves to the end and whom becomes who or disappears: the woman who I spoke to, the woman I spoke to. To whom stays formal.'
+          ]
         },
         {
           title: 'Defining or non-defining',
